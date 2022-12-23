@@ -1,0 +1,3 @@
+"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\WinGameAlpha.dir/objects.a
+C:\MinGW\bin\ar.exe qc CMakeFiles\WinGameAlpha.dir/objects.a @CMakeFiles\WinGameAlpha.dir\objects1
+C:\MinGW\bin\g++.exe -mwindows -Wl,--whole-archive CMakeFiles\WinGameAlpha.dir/objects.a -Wl,--no-whole-archive -o WinGameAlpha.exe -Wl,--out-implib,libWinGameAlpha.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\WinGameAlpha.dir\linkLibs.rsp
