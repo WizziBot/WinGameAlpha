@@ -82,19 +82,51 @@ src/CMakeFiles/WinGameAlpha.dir/win_platform.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/WinGameAlpha.dir/win_platform.cpp.s"
 	cd /d C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build\src && C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\src\win_platform.cpp -o CMakeFiles\WinGameAlpha.dir\win_platform.cpp.s
 
+src/CMakeFiles/WinGameAlpha.dir/renderer.cpp.obj: src/CMakeFiles/WinGameAlpha.dir/flags.make
+src/CMakeFiles/WinGameAlpha.dir/renderer.cpp.obj: C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/renderer.cpp
+src/CMakeFiles/WinGameAlpha.dir/renderer.cpp.obj: src/CMakeFiles/WinGameAlpha.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object src/CMakeFiles/WinGameAlpha.dir/renderer.cpp.obj"
+	cd /d C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build\src && C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/WinGameAlpha.dir/renderer.cpp.obj -MF CMakeFiles\WinGameAlpha.dir\renderer.cpp.obj.d -o CMakeFiles\WinGameAlpha.dir\renderer.cpp.obj -c C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\src\renderer.cpp
+
+src/CMakeFiles/WinGameAlpha.dir/renderer.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/WinGameAlpha.dir/renderer.cpp.i"
+	cd /d C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build\src && C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\src\renderer.cpp > CMakeFiles\WinGameAlpha.dir\renderer.cpp.i
+
+src/CMakeFiles/WinGameAlpha.dir/renderer.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/WinGameAlpha.dir/renderer.cpp.s"
+	cd /d C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build\src && C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\src\renderer.cpp -o CMakeFiles\WinGameAlpha.dir\renderer.cpp.s
+
+src/CMakeFiles/WinGameAlpha.dir/app.cpp.obj: src/CMakeFiles/WinGameAlpha.dir/flags.make
+src/CMakeFiles/WinGameAlpha.dir/app.cpp.obj: C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/app.cpp
+src/CMakeFiles/WinGameAlpha.dir/app.cpp.obj: src/CMakeFiles/WinGameAlpha.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object src/CMakeFiles/WinGameAlpha.dir/app.cpp.obj"
+	cd /d C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build\src && C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT src/CMakeFiles/WinGameAlpha.dir/app.cpp.obj -MF CMakeFiles\WinGameAlpha.dir\app.cpp.obj.d -o CMakeFiles\WinGameAlpha.dir\app.cpp.obj -c C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\src\app.cpp
+
+src/CMakeFiles/WinGameAlpha.dir/app.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/WinGameAlpha.dir/app.cpp.i"
+	cd /d C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build\src && C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\src\app.cpp > CMakeFiles\WinGameAlpha.dir\app.cpp.i
+
+src/CMakeFiles/WinGameAlpha.dir/app.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/WinGameAlpha.dir/app.cpp.s"
+	cd /d C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build\src && C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\src\app.cpp -o CMakeFiles\WinGameAlpha.dir\app.cpp.s
+
 # Object files for target WinGameAlpha
 WinGameAlpha_OBJECTS = \
-"CMakeFiles/WinGameAlpha.dir/win_platform.cpp.obj"
+"CMakeFiles/WinGameAlpha.dir/win_platform.cpp.obj" \
+"CMakeFiles/WinGameAlpha.dir/renderer.cpp.obj" \
+"CMakeFiles/WinGameAlpha.dir/app.cpp.obj"
 
 # External object files for target WinGameAlpha
 WinGameAlpha_EXTERNAL_OBJECTS =
 
 src/WinGameAlpha.exe: src/CMakeFiles/WinGameAlpha.dir/win_platform.cpp.obj
+src/WinGameAlpha.exe: src/CMakeFiles/WinGameAlpha.dir/renderer.cpp.obj
+src/WinGameAlpha.exe: src/CMakeFiles/WinGameAlpha.dir/app.cpp.obj
 src/WinGameAlpha.exe: src/CMakeFiles/WinGameAlpha.dir/build.make
 src/WinGameAlpha.exe: src/CMakeFiles/WinGameAlpha.dir/linkLibs.rsp
 src/WinGameAlpha.exe: src/CMakeFiles/WinGameAlpha.dir/objects1
 src/WinGameAlpha.exe: src/CMakeFiles/WinGameAlpha.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable WinGameAlpha.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable WinGameAlpha.exe"
 	cd /d C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build\src && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\WinGameAlpha.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

@@ -95,12 +95,12 @@ src/clean: src/CMakeFiles/WinGameAlpha.dir/clean
 src/CMakeFiles/WinGameAlpha.dir/all:
 	$(MAKE) $(MAKESILENT) -f src\CMakeFiles\WinGameAlpha.dir\build.make src/CMakeFiles/WinGameAlpha.dir/depend
 	$(MAKE) $(MAKESILENT) -f src\CMakeFiles\WinGameAlpha.dir\build.make src/CMakeFiles/WinGameAlpha.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build\CMakeFiles --progress-num=1,2 "Built target WinGameAlpha"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build\CMakeFiles --progress-num=1,2,3,4 "Built target WinGameAlpha"
 .PHONY : src/CMakeFiles/WinGameAlpha.dir/all
 
 # Build rule for subdir invocation for target.
 src/CMakeFiles/WinGameAlpha.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build\CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build\CMakeFiles 4
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 src/CMakeFiles/WinGameAlpha.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build\CMakeFiles 0
 .PHONY : src/CMakeFiles/WinGameAlpha.dir/rule

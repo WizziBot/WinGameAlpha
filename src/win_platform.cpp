@@ -1,18 +1,21 @@
 
-#include <Windows.h>
 #include <iostream>
+#include "core.hpp"
+#include "renderer.hpp"
+#include "app.hpp"
 
 /* DEFINES */
-#define W_WIDTH 640
-#define W_HEIGHT 360
-#define C_ONMSG "Hello"
-#define DEBUG_MODE
+#define W_WIDTH APP_WIDTH
+#define W_HEIGHT APP_HEIGHT
+#define C_ONMSG "WinGameAlpha: Started"
+// #define DEBUG_MODE
 
-bool running = true;
-void* buffer_memory;
-int buffer_width;
-int buffer_height;
-BITMAPINFO buffer_bitmap_info;
+
+namespace WinGameAlpha {
+
+Render_State render_state;
+
+static bool running = true;
 
 LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
     LRESULT result = 0;
@@ -25,26 +28,21 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
         case WM_SIZE: {
             RECT rect;
             GetClientRect(hWnd,&rect);
-            buffer_width = rect.right - rect.left;
-            buffer_height = rect.bottom - rect.top;
-            int buffer_size = buffer_width*buffer_height*sizeof(uint32_t);
+            render_state.width = rect.right - rect.left;
+            render_state.height = rect.bottom - rect.top;
+            int buffer_size = render_state.width*render_state.height*sizeof(uint32_t);
 
-            #ifdef DEBUG_MODE
-            std::cout << "Width: " << buffer_width << ", Height: " << buffer_height << std::endl;
-            #endif
-
-            if (buffer_memory) VirtualFree(buffer_memory,0,MEM_RELEASE);
-            buffer_memory = VirtualAlloc(0, buffer_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-            if (buffer_memory == NULL){
-                std::cout << "MEMFAIL" << std::endl;
+            if (render_state.memory) VirtualFree(render_state.memory,0,MEM_RELEASE);
+            render_state.memory = VirtualAlloc(0, buffer_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+            if (render_state.memory == NULL){
+                std::cerr << "Memory assignment failure: Render state" << std::endl;
             }
-
-            buffer_bitmap_info.bmiHeader.biSize = sizeof(buffer_bitmap_info.bmiHeader);
-            buffer_bitmap_info.bmiHeader.biWidth = buffer_width;
-            buffer_bitmap_info.bmiHeader.biHeight = buffer_height;
-            buffer_bitmap_info.bmiHeader.biPlanes = 1;
-            buffer_bitmap_info.bmiHeader.biBitCount = 32;
-            buffer_bitmap_info.bmiHeader.biCompression = BI_RGB;
+    
+            render_state.bitmap_info.bmiHeader.biWidth = render_state.width;
+            render_state.bitmap_info.bmiHeader.biHeight = render_state.height;
+            
+            // Render every window size update
+            render_update();
         } break;
 
         default: {
@@ -53,9 +51,20 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
     }
     return result;
 }
+}
 
-int WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd ){
+using namespace WinGameAlpha;
+
+int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd){
+    
     std::cout << C_ONMSG << std::endl;
+
+    // Init bitmap header
+    render_state.bitmap_info.bmiHeader.biSize = sizeof(render_state.bitmap_info.bmiHeader);
+    render_state.bitmap_info.bmiHeader.biPlanes = 1;
+    render_state.bitmap_info.bmiHeader.biBitCount = 32;
+    render_state.bitmap_info.bmiHeader.biCompression = BI_RGB;
+
     // Create Window Class
     WNDCLASS window_class = {};
     window_class.style = CS_HREDRAW | CS_VREDRAW;
@@ -68,22 +77,21 @@ int WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int 
     HWND window = CreateWindowA((LPCSTR)window_class.lpszClassName, (LPCSTR)"WinGameAlpha", WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, W_WIDTH, W_HEIGHT, 0, 0, hInstance,0);
     HDC hdc = GetDC(window);
 
+    // Frist time render
+    render_init();
+
     while (running){
         MSG message;
         while (PeekMessage(&message,window,0,0,PM_REMOVE)) {
             TranslateMessage(&message);
             DispatchMessage(&message);
         }
-        int y, x;
-        uint32_t* pixel = (uint32_t*)buffer_memory;
-        for (y = 0; y < buffer_height; y++){
-            for (x = 0; x < buffer_width; x++){
-                *pixel = 0xff5500;
-                pixel++;
-            }
-        }
 
-        StretchDIBits(hdc, 0, 0, buffer_width, buffer_height, 0, 0, buffer_width, buffer_height, buffer_memory, &buffer_bitmap_info, DIB_RGB_COLORS, SRCCOPY);
+        // Render every tick
+        render_tick();
+
+        // Overwrite screen buffer
+        StretchDIBits(hdc, 0, 0, render_state.width, render_state.height, 0, 0, render_state.width, render_state.height, render_state.memory, &render_state.bitmap_info, DIB_RGB_COLORS, SRCCOPY);
 
     }
 

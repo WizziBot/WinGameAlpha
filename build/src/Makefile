@@ -129,6 +129,54 @@ WinGameAlpha/fast:
 	cd /d C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build && $(MAKE) $(MAKESILENT) -f src\CMakeFiles\WinGameAlpha.dir\build.make src/CMakeFiles/WinGameAlpha.dir/build
 .PHONY : WinGameAlpha/fast
 
+app.obj: app.cpp.obj
+.PHONY : app.obj
+
+# target to build an object file
+app.cpp.obj:
+	cd /d C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build && $(MAKE) $(MAKESILENT) -f src\CMakeFiles\WinGameAlpha.dir\build.make src/CMakeFiles/WinGameAlpha.dir/app.cpp.obj
+.PHONY : app.cpp.obj
+
+app.i: app.cpp.i
+.PHONY : app.i
+
+# target to preprocess a source file
+app.cpp.i:
+	cd /d C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build && $(MAKE) $(MAKESILENT) -f src\CMakeFiles\WinGameAlpha.dir\build.make src/CMakeFiles/WinGameAlpha.dir/app.cpp.i
+.PHONY : app.cpp.i
+
+app.s: app.cpp.s
+.PHONY : app.s
+
+# target to generate assembly for a file
+app.cpp.s:
+	cd /d C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build && $(MAKE) $(MAKESILENT) -f src\CMakeFiles\WinGameAlpha.dir\build.make src/CMakeFiles/WinGameAlpha.dir/app.cpp.s
+.PHONY : app.cpp.s
+
+renderer.obj: renderer.cpp.obj
+.PHONY : renderer.obj
+
+# target to build an object file
+renderer.cpp.obj:
+	cd /d C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build && $(MAKE) $(MAKESILENT) -f src\CMakeFiles\WinGameAlpha.dir\build.make src/CMakeFiles/WinGameAlpha.dir/renderer.cpp.obj
+.PHONY : renderer.cpp.obj
+
+renderer.i: renderer.cpp.i
+.PHONY : renderer.i
+
+# target to preprocess a source file
+renderer.cpp.i:
+	cd /d C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build && $(MAKE) $(MAKESILENT) -f src\CMakeFiles\WinGameAlpha.dir\build.make src/CMakeFiles/WinGameAlpha.dir/renderer.cpp.i
+.PHONY : renderer.cpp.i
+
+renderer.s: renderer.cpp.s
+.PHONY : renderer.s
+
+# target to generate assembly for a file
+renderer.cpp.s:
+	cd /d C:\Users\Rodriguez\Desktop\code\windows_cpp\WinGameAlpha\build && $(MAKE) $(MAKESILENT) -f src\CMakeFiles\WinGameAlpha.dir\build.make src/CMakeFiles/WinGameAlpha.dir/renderer.cpp.s
+.PHONY : renderer.cpp.s
+
 win_platform.obj: win_platform.cpp.obj
 .PHONY : win_platform.obj
 
@@ -162,6 +210,12 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... WinGameAlpha
+	@echo ... app.obj
+	@echo ... app.i
+	@echo ... app.s
+	@echo ... renderer.obj
+	@echo ... renderer.i
+	@echo ... renderer.s
 	@echo ... win_platform.obj
 	@echo ... win_platform.i
 	@echo ... win_platform.s

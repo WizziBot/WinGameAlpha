@@ -1,4 +1,8 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/WinGameAlpha.dir/app.cpp.obj"
+  "CMakeFiles/WinGameAlpha.dir/app.cpp.obj.d"
+  "CMakeFiles/WinGameAlpha.dir/renderer.cpp.obj"
+  "CMakeFiles/WinGameAlpha.dir/renderer.cpp.obj.d"
   "CMakeFiles/WinGameAlpha.dir/win_platform.cpp.obj"
   "CMakeFiles/WinGameAlpha.dir/win_platform.cpp.obj.d"
   "WinGameAlpha.exe"

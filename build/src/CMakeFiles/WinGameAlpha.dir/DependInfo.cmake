@@ -8,6 +8,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/app.cpp" "src/CMakeFiles/WinGameAlpha.dir/app.cpp.obj" "gcc" "src/CMakeFiles/WinGameAlpha.dir/app.cpp.obj.d"
+  "C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/renderer.cpp" "src/CMakeFiles/WinGameAlpha.dir/renderer.cpp.obj" "gcc" "src/CMakeFiles/WinGameAlpha.dir/renderer.cpp.obj.d"
   "C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/win_platform.cpp" "src/CMakeFiles/WinGameAlpha.dir/win_platform.cpp.obj" "gcc" "src/CMakeFiles/WinGameAlpha.dir/win_platform.cpp.obj.d"
   )
 
