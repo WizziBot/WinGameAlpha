@@ -79,7 +79,9 @@ src/CMakeFiles/WinGameAlpha.dir/app.cpp.obj: C:/Users/Rodriguez/Desktop/code/win
   C:/MinGW/include/oleidl.h \
   C:/MinGW/lib/gcc/mingw32/6.3.0/include/stdint.h \
   C:/MinGW/include/stdint.h \
-  C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/app.hpp
+  C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/app.hpp \
+  C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/common.hpp \
+  C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/utils.hpp
 
 src/CMakeFiles/WinGameAlpha.dir/renderer.cpp.obj: C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/renderer.cpp \
   C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/renderer.hpp \
@@ -434,7 +436,8 @@ src/CMakeFiles/WinGameAlpha.dir/win_platform.cpp.obj: C:/Users/Rodriguez/Desktop
   C:/MinGW/include/oaidl.h \
   C:/MinGW/include/oleidl.h \
   C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/renderer.hpp \
-  C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/app.hpp
+  C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/app.hpp \
+  C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/common.hpp
 
 
 C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/app.cpp:
@@ -625,11 +628,13 @@ C:/MinGW/include/stdint.h:
 
 C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/app.hpp:
 
+C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/common.hpp:
+
+C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/utils.hpp:
+
 C:/MinGW/lib/gcc/mingw32/6.3.0/include/c++/bits/postypes.h:
 
 C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/renderer.cpp:
-
-C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/utils.hpp:
 
 C:/MinGW/lib/gcc/mingw32/6.3.0/include/c++/bits/locale_classes.h:
 

@@ -3,6 +3,7 @@
 #include "core.hpp"
 #include "renderer.hpp"
 #include "app.hpp"
+#include "common.hpp"
 
 /* DEFINES */
 #define W_WIDTH APP_WIDTH
@@ -16,6 +17,7 @@ namespace WinGameAlpha {
 Render_State render_state;
 
 static bool running = true;
+extern bool changes;
 
 LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
     LRESULT result = 0;
@@ -80,19 +82,56 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     // Frist time render
     render_init();
 
+    Input input = {};
+
     while (running){
         MSG message;
+
+        for (int i = 0; i < BUTTON_COUNT; i++){
+            input.buttons[i].changed = false;
+        }
+
         while (PeekMessage(&message,window,0,0,PM_REMOVE)) {
-            TranslateMessage(&message);
-            DispatchMessage(&message);
+            switch(message.message) {
+                case WM_KEYUP:
+                case WM_KEYDOWN: {
+                    uint32_t vk_code = (uint32_t)message.wParam;
+                    bool is_down = ((message.lParam & (1<<31)) == 0);
+
+                    switch (vk_code){
+                        case VK_W:{
+                            input.buttons[BUTTON_UP].down = is_down;
+                            input.buttons[BUTTON_UP].changed = true;
+                        }break;
+                        case VK_A:{
+                            input.buttons[BUTTON_LEFT].down = is_down;
+                            input.buttons[BUTTON_LEFT].changed = true;
+                        }break;
+                        case VK_S:{
+                            input.buttons[BUTTON_DOWN].down = is_down;
+                            input.buttons[BUTTON_DOWN].changed = true;
+                        }break;
+                        case VK_D:{
+                            input.buttons[BUTTON_RIGHT].down = is_down;
+                            input.buttons[BUTTON_RIGHT].changed = true;
+                        }break;
+                    }
+                }break;
+                default: {
+                    TranslateMessage(&message);
+                    DispatchMessage(&message);
+                }
+            }
+            changes = true; // Tell tick to react to changes
         }
 
         // Render every tick
-        render_tick();
+        render_tick(input);
 
         // Overwrite screen buffer
         StretchDIBits(hdc, 0, 0, render_state.width, render_state.height, 0, 0, render_state.width, render_state.height, render_state.memory, &render_state.bitmap_info, DIB_RGB_COLORS, SRCCOPY);
 
+        Sleep(TICK_DELAY);
     }
 
     return 0;
