@@ -13,7 +13,7 @@ void app_main();
 
 void render_init();
 
-void render_tick(Input& input);
+void render_tick(Input& input, float dt);
 
 void render_update();
 

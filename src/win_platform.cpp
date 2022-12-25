@@ -84,6 +84,16 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
     Input input = {};
 
+    float delta_time = 0.016666f;
+    LARGE_INTEGER frame_begin_time, frame_end_time;
+    QueryPerformanceCounter(&frame_begin_time);
+    float performance_frequency;
+    {
+        LARGE_INTEGER perf;
+        QueryPerformanceFrequency(&perf);
+        performance_frequency = (float)perf.QuadPart;
+    }
+
     while (running){
         MSG message;
 
@@ -98,23 +108,28 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
                     uint32_t vk_code = (uint32_t)message.wParam;
                     bool is_down = ((message.lParam & (1<<31)) == 0);
 
+#define switch_btn(b,vk) \
+case vk:{ \
+    input.buttons[b].changed = (is_down != input.buttons[b].down); \
+    input.buttons[b].down = is_down;}
+
                     switch (vk_code){
-                        case VK_W:{
-                            input.buttons[BUTTON_UP].down = is_down;
-                            input.buttons[BUTTON_UP].changed = true;
-                        }break;
-                        case VK_A:{
-                            input.buttons[BUTTON_LEFT].down = is_down;
-                            input.buttons[BUTTON_LEFT].changed = true;
-                        }break;
-                        case VK_S:{
-                            input.buttons[BUTTON_DOWN].down = is_down;
-                            input.buttons[BUTTON_DOWN].changed = true;
-                        }break;
-                        case VK_D:{
-                            input.buttons[BUTTON_RIGHT].down = is_down;
-                            input.buttons[BUTTON_RIGHT].changed = true;
-                        }break;
+                        switch_btn(BUTTON_UP,VK_W)
+                        break;
+                        switch_btn(BUTTON_LEFT,VK_A)
+                        break;
+                        switch_btn(BUTTON_DOWN,VK_S)
+                        break;
+                        switch_btn(BUTTON_RIGHT,VK_D)
+                        break;
+                        switch_btn(BUTTON_KUP,VK_UP)
+                        break;
+                        switch_btn(BUTTON_KLEFT,VK_LEFT)
+                        break;
+                        switch_btn(BUTTON_KDOWN,VK_DOWN)
+                        break;
+                        switch_btn(BUTTON_KRIGHT,VK_RIGHT)
+                        break;
                     }
                 }break;
                 default: {
@@ -126,12 +141,16 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         }
 
         // Render every tick
-        render_tick(input);
+        render_tick(input,delta_time);
 
         // Overwrite screen buffer
         StretchDIBits(hdc, 0, 0, render_state.width, render_state.height, 0, 0, render_state.width, render_state.height, render_state.memory, &render_state.bitmap_info, DIB_RGB_COLORS, SRCCOPY);
-
         Sleep(TICK_DELAY);
+
+        // SPF calculation
+        QueryPerformanceCounter(&frame_end_time);
+        delta_time = (float)(frame_end_time.QuadPart - frame_begin_time.QuadPart)/performance_frequency;
+        frame_begin_time = frame_end_time;
     }
 
     return 0;

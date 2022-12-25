@@ -21,6 +21,10 @@ enum Button_Type{
     BUTTON_DOWN,
     BUTTON_LEFT,
     BUTTON_RIGHT,
+    BUTTON_KUP,
+    BUTTON_KDOWN,
+    BUTTON_KLEFT,
+    BUTTON_KRIGHT,
 
     BUTTON_COUNT // Relys on enum 0 based incremented
 };
