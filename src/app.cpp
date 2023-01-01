@@ -1,55 +1,116 @@
-#include "renderer.hpp"
 #include "app.hpp"
-#include "utils.hpp"
 #include <iostream>
 
+#define BLOCK_HEIGHT 24
+
 #define P_SPEED 50.f
+#define B_INIT_SPEED 50.f
+#define FRICTION .05f
+
+#define ARENA_L -85.f
+#define ARENA_R 85.f
+#define ARENA_U 45.f
+#define ARENA_D -45.f
+
+#define P_WIDTH 5
+#define P_X_DISPLACEMENT 80
 
 namespace WinGameAlpha {
 
+struct Player_Data{
+    float m_posY = 0;
+    float m_dy = 0;
+    float m_ddy = 0;
+};
+struct Ball_Data{
+    float m_posY = 0;
+    float m_posX = 0;
+    float m_dy = 0;
+    float m_ddy = 0;
+    float m_dx = B_INIT_SPEED;
+    float m_ddx = 0;
+};
+
 bool changes = false;
 
-static float player_posX = 0;
-static float player_posY = 0;
+static Player_Data player1;
+static Player_Data player2;
+static Ball_Data ball;
 
 void app_main(){
 
 }
 
+inline static void render_background(){
+    draw_crect(0,0,ARENA_R*2,ARENA_U*2,0x222222);
+
+    draw_crect(ball.m_posX,ball.m_posY,2,2,0xffffff);
+    draw_crect(P_X_DISPLACEMENT,player2.m_posY,P_WIDTH,BLOCK_HEIGHT,0xff0000);
+    draw_crect(-P_X_DISPLACEMENT,player1.m_posY,P_WIDTH,BLOCK_HEIGHT,0xff0000);
+
+}
+
 void render_init(){
     clear_screen(0x333333);
-    draw_crect(0,0,120,80,0x222222);
+    render_background();
 }
 
 void render_update(){
     clear_screen(0x333333);
-    draw_crect(0,0,120,80,0x222222);
-    draw_rect(10,10,50,10,0xffffff);
-    draw_rect(10,30,50,10,0xffffff);
-    draw_crect(player_posX,player_posY,15,15,0x550055);
+    render_background();
 }
 
 void render_tick(Input& input, float dt){
-    if (!btn_down(BUTTON_UP) && !btn_down(BUTTON_DOWN) && !btn_down(BUTTON_LEFT) && !btn_down(BUTTON_RIGHT)){
-        draw_rect(10,10,50,10,0xffffff);
-        draw_rect(10,30,50,10,0xffffff);
-        draw_crect(player_posX,player_posY,15,15,0x550055);
-        return;
+    // if (!btn_down(BUTTON_UP) && !btn_down(BUTTON_DOWN) && !btn_down(BUTTON_LEFT) && !btn_down(BUTTON_RIGHT)) return;
+
+    // std::cout << "dt: " << dt << " pY: " << player1.m_posY << " pX:" << player_posX << std::endl;
+
+    // Set acceleration
+    player1.m_ddy = 0;
+    player2.m_ddy = 0;
+    if (btn_down(BUTTON_UP)) player1.m_ddy = 500;
+    if (btn_down(BUTTON_DOWN)) player1.m_ddy = -500;
+    if (btn_down(BUTTON_KUP)) player2.m_ddy = 500;
+    if (btn_down(BUTTON_KDOWN)) player2.m_ddy = -500;
+
+    // Equations of motion
+    player1.m_posY = player1.m_posY + player1.m_dy * dt + player1.m_ddy*dt*dt*.5f;
+    player1.m_dy = player1.m_dy + player1.m_ddy * dt - FRICTION*player1.m_dy;
+    player2.m_posY = player2.m_posY + player2.m_dy * dt + player2.m_ddy*dt*dt*.5f;
+    player2.m_dy = player2.m_dy + player2.m_ddy * dt - FRICTION*player2.m_dy;
+
+    ball.m_posX += ball.m_dx * dt;
+    ball.m_posY += ball.m_dy * dt;
+
+    // Ball collision
+
+    if (ball.m_posX > P_X_DISPLACEMENT - P_WIDTH/2){
+        ball.m_posX = P_X_DISPLACEMENT - P_WIDTH/2;
+        ball.m_dx *= -1;
+    } else if (ball.m_posX < P_WIDTH/2 - P_X_DISPLACEMENT) {
+        ball.m_posX = P_WIDTH/2 - P_X_DISPLACEMENT;
+        ball.m_dx *= -1;
     }
 
-    // std::cout << "dt: " << dt << " pY: " << player_posY << " pX:" << player_posX << std::endl;
-
-    if (btn_down(BUTTON_UP)) player_posY += P_SPEED*dt;
-    if (btn_down(BUTTON_DOWN)) player_posY -= P_SPEED*dt;
-    if (btn_down(BUTTON_RIGHT)) player_posX += P_SPEED*dt;
-    if (btn_down(BUTTON_LEFT)) player_posX -= P_SPEED*dt;
+    // Bounds of arena
+    if (player1.m_posY > ARENA_U-BLOCK_HEIGHT/2){
+        player1.m_posY = ARENA_U-BLOCK_HEIGHT/2;
+        player1.m_dy = 0;
+    } else if (player1.m_posY < ARENA_D+BLOCK_HEIGHT/2){
+        player1.m_posY = ARENA_D+BLOCK_HEIGHT/2;
+        player1.m_dy = 0;
+    }
+    if (player2.m_posY > ARENA_U-BLOCK_HEIGHT/2){
+        player2.m_posY = ARENA_U-BLOCK_HEIGHT/2;
+        player2.m_dy = 0;
+    } else if (player2.m_posY < ARENA_D+BLOCK_HEIGHT/2){
+        player2.m_posY = ARENA_D+BLOCK_HEIGHT/2;
+        player2.m_dy = 0;
+    }
 
     clear_screen(0x333333);
-    draw_crect(0,0,120,80,0x222222);
-    draw_rect(10,10,50,10,0xff0000);
-    draw_rect(10,30,50,10,0xff0000);
-    draw_crect(player_posX,player_posY,15,15,0x0000ff);
-    
+    render_background();
+
 }
 
 }

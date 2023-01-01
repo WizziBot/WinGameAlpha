@@ -4,8 +4,6 @@
 #include <iostream>
 namespace WinGameAlpha{
 
-extern Render_State render_state;
-
 void clear_screen(uint32_t colour){
     uint32_t* pixel = (uint32_t*)render_state.memory;
     for (int y = 0; y < render_state.height; y++){

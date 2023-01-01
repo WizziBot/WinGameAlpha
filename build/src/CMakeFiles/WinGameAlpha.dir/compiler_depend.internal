@@ -3,7 +3,7 @@
 
 src/CMakeFiles/WinGameAlpha.dir/app.cpp.obj
  C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/app.cpp
- C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/renderer.hpp
+ C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/app.hpp
  C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/core.hpp
  C:/MinGW/include/windows.h
  C:/MinGW/lib/gcc/mingw32/6.3.0/include/stdarg.h
@@ -78,9 +78,9 @@ src/CMakeFiles/WinGameAlpha.dir/app.cpp.obj
  C:/MinGW/include/oleauto.h
  C:/MinGW/include/oaidl.h
  C:/MinGW/include/oleidl.h
+ C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/renderer.hpp
  C:/MinGW/lib/gcc/mingw32/6.3.0/include/stdint.h
  C:/MinGW/include/stdint.h
- C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/app.hpp
  C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/common.hpp
  C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/utils.hpp
  C:/MinGW/lib/gcc/mingw32/6.3.0/include/c++/iostream
@@ -537,4 +537,5 @@ src/CMakeFiles/WinGameAlpha.dir/win_platform.cpp.obj
  C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/renderer.hpp
  C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/app.hpp
  C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/common.hpp
+ C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/src/utils.hpp
 

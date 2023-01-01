@@ -3,6 +3,8 @@
 #include <stdint.h>
 
 namespace WinGameAlpha{
+
+extern Render_State render_state;
     
 /* Clear screen to one colour */
 void clear_screen(uint32_t colour);
