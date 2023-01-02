@@ -1,5 +1,0 @@
-C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/build/CMakeFiles/edit_cache.dir
-C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/build/CMakeFiles/rebuild_cache.dir
-C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/build/src/CMakeFiles/WinGameAlpha.dir
-C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/build/src/CMakeFiles/edit_cache.dir
-C:/Users/Rodriguez/Desktop/code/windows_cpp/WinGameAlpha/build/src/CMakeFiles/rebuild_cache.dir
