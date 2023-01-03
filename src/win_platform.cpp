@@ -32,7 +32,7 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
             GetClientRect(hWnd,&rect);
             render_state.width = rect.right - rect.left;
             render_state.height = rect.bottom - rect.top;
-            int buffer_size = render_state.width*render_state.height*sizeof(uint32_t);
+            int buffer_size = render_state.width*render_state.height*sizeof(uint32_t); //3 bytes for RGB and 1 byte padding
 
             if (render_state.memory) VirtualFree(render_state.memory,0,MEM_RELEASE);
             render_state.memory = VirtualAlloc(0, buffer_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
