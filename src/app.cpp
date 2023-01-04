@@ -1,19 +1,28 @@
 #include "app.hpp"
 #include <iostream>
 
-#define BLOCK_HEIGHT 24
-
+//Physics
 #define P_SPEED 50.f
+#define P_ACCELERATION 500
+#define B_Y_SPEED 25.f
 #define B_INIT_SPEED 50.f
 #define FRICTION .05f
 
+// Size defines
 #define ARENA_L -85.f
 #define ARENA_R 85.f
 #define ARENA_U 45.f
 #define ARENA_D -45.f
-
 #define P_WIDTH 5
+#define P_HEIGHT 24
+#define B_DIAMETER 2
 #define P_X_DISPLACEMENT 80
+
+// Colours
+#define BACKGROUND_COLOUR 0x2A2A2A
+#define ARENA_COLOUR 0x222222
+#define B_COLOUR 0xffffff
+#define P_COLOUR 0xff0000
 
 namespace WinGameAlpha {
 
@@ -26,9 +35,7 @@ struct Ball_Data{
     float m_posY = 0;
     float m_posX = 0;
     float m_dy = 0;
-    float m_ddy = 0;
     float m_dx = B_INIT_SPEED;
-    float m_ddx = 0;
 };
 
 bool changes = false;
@@ -42,70 +49,78 @@ void app_main(){
 }
 
 inline static void render_background(){
-    draw_crect(0,0,ARENA_R*2,ARENA_U*2,0x222222);
+    draw_crect(0,0,ARENA_R*2,ARENA_U*2,ARENA_COLOUR);
 
-    draw_crect(ball.m_posX,ball.m_posY,2,2,0xffffff);
-    draw_crect(P_X_DISPLACEMENT,player2.m_posY,P_WIDTH,BLOCK_HEIGHT,0xff0000);
-    draw_crect(-P_X_DISPLACEMENT,player1.m_posY,P_WIDTH,BLOCK_HEIGHT,0xff0000);
+    draw_crect(ball.m_posX,ball.m_posY,B_DIAMETER,B_DIAMETER,B_COLOUR);
+    draw_crect(P_X_DISPLACEMENT,player2.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
+    draw_crect(-P_X_DISPLACEMENT,player1.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
 
 }
 
 void render_init(){
-    clear_screen(0x333333);
+    clear_screen(BACKGROUND_COLOUR);
     render_background();
 }
 
 void render_update(){
-    clear_screen(0x333333);
+    clear_screen(BACKGROUND_COLOUR);
     render_background();
 }
+
+#define APPLY_KINEMATICS_TICK(s,v,a,dt) s = s + v * dt + a*dt*dt*.5f; \
+                                        v = v + a * dt - FRICTION*v;
 
 void render_tick(Input& input, float dt){
 
     // Set acceleration
     player1.m_ddy = 0;
     player2.m_ddy = 0;
-    if (btn_down(BUTTON_UP)) player1.m_ddy = 500;
-    if (btn_down(BUTTON_DOWN)) player1.m_ddy = -500;
-    if (btn_down(BUTTON_KUP)) player2.m_ddy = 500;
-    if (btn_down(BUTTON_KDOWN)) player2.m_ddy = -500;
+    if (btn_down(BUTTON_UP)) player1.m_ddy = P_ACCELERATION;
+    if (btn_down(BUTTON_DOWN)) player1.m_ddy = -P_ACCELERATION;
+    if (btn_down(BUTTON_KUP)) player2.m_ddy = P_ACCELERATION;
+    if (btn_down(BUTTON_KDOWN)) player2.m_ddy = -P_ACCELERATION;
 
-    // Equations of motion
-    player1.m_posY = player1.m_posY + player1.m_dy * dt + player1.m_ddy*dt*dt*.5f;
-    player1.m_dy = player1.m_dy + player1.m_ddy * dt - FRICTION*player1.m_dy;
-    player2.m_posY = player2.m_posY + player2.m_dy * dt + player2.m_ddy*dt*dt*.5f;
-    player2.m_dy = player2.m_dy + player2.m_ddy * dt - FRICTION*player2.m_dy;
+    // Apply kinematics
+    APPLY_KINEMATICS_TICK(player1.m_posY,player1.m_dy,player1.m_ddy,dt);
+    APPLY_KINEMATICS_TICK(player2.m_posY,player2.m_dy,player2.m_ddy,dt);
 
     ball.m_posX += ball.m_dx * dt;
     ball.m_posY += ball.m_dy * dt;
 
-    // Ball collision
+    // Ball collision players AABB
 
-    if (ball.m_posX > P_X_DISPLACEMENT - P_WIDTH/2){
-        ball.m_posX = P_X_DISPLACEMENT - P_WIDTH/2;
+    if (ball.m_posX > P_X_DISPLACEMENT - P_WIDTH/2 && within_bounds(player2.m_posY-P_HEIGHT,ball.m_posY,player2.m_posY+P_HEIGHT)){
         ball.m_dx *= -1;
-    } else if (ball.m_posX < P_WIDTH/2 - P_X_DISPLACEMENT) {
-        ball.m_posX = P_WIDTH/2 - P_X_DISPLACEMENT;
+        ball.m_dy = ((uint32_t)player2.m_dy & (1 << 31)) ? -B_Y_SPEED : B_Y_SPEED;
+    } else if (ball.m_posX < P_WIDTH/2 - P_X_DISPLACEMENT && within_bounds(player1.m_posY-P_HEIGHT,ball.m_posY,player1.m_posY+P_HEIGHT)) {
         ball.m_dx *= -1;
+        ball.m_dy = ((uint32_t)player1.m_dy & (1 << 31)) ? -B_Y_SPEED : B_Y_SPEED;
     }
 
-    // Bounds of arena
-    if (player1.m_posY > ARENA_U-BLOCK_HEIGHT/2){
-        player1.m_posY = ARENA_U-BLOCK_HEIGHT/2;
+    // Bounds of arena collisions
+    if (player1.m_posY > ARENA_U-P_HEIGHT/2){
+        player1.m_posY = ARENA_U-P_HEIGHT/2;
         player1.m_dy = 0;
-    } else if (player1.m_posY < ARENA_D+BLOCK_HEIGHT/2){
-        player1.m_posY = ARENA_D+BLOCK_HEIGHT/2;
+    } else if (player1.m_posY < ARENA_D+P_HEIGHT/2){
+        player1.m_posY = ARENA_D+P_HEIGHT/2;
         player1.m_dy = 0;
     }
-    if (player2.m_posY > ARENA_U-BLOCK_HEIGHT/2){
-        player2.m_posY = ARENA_U-BLOCK_HEIGHT/2;
+    if (player2.m_posY > ARENA_U-P_HEIGHT/2){
+        player2.m_posY = ARENA_U-P_HEIGHT/2;
         player2.m_dy = 0;
-    } else if (player2.m_posY < ARENA_D+BLOCK_HEIGHT/2){
-        player2.m_posY = ARENA_D+BLOCK_HEIGHT/2;
+    } else if (player2.m_posY < ARENA_D+P_HEIGHT/2){
+        player2.m_posY = ARENA_D+P_HEIGHT/2;
         player2.m_dy = 0;
+    }
+    if (ball.m_posY > ARENA_U-B_DIAMETER/2){
+        ball.m_posY = ARENA_U-B_DIAMETER/2;
+        ball.m_dy = 0;
+    } else if (ball.m_posY < ARENA_D+B_DIAMETER/2){
+        ball.m_posY = ARENA_D+B_DIAMETER/2;
+        ball.m_dy = 0;
     }
 
-    clear_screen(0x333333);
+    clear_screen(BACKGROUND_COLOUR);
     render_background();
 
 }

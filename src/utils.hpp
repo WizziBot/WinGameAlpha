@@ -14,4 +14,10 @@ inline float fclamp(float min, float val, float max) {
     return val;
 }
 
+/* Returns 0 if within bounds, 1 if below min and 2 if above max */
+inline bool within_bounds(float min, float val, float max){
+    if (val > max || val < min) return false;
+    else return true;
+}
+
 }
