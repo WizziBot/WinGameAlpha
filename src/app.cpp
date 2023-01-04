@@ -91,7 +91,7 @@ void render_tick(Input& input, float dt){
 
     if (ball.m_posX > P_X_DISPLACEMENT - P_WIDTH/2 && within_bounds(player2.m_posY-P_HEIGHT,ball.m_posY,player2.m_posY+P_HEIGHT)){
         ball.m_dx *= -1;
-        ball.m_dy = ((uint32_t)player2.m_dy & (1 << 31)) ? -B_Y_SPEED : B_Y_SPEED;
+        ball.m_dy = ((uint32_t)player2.m_dy & (1 << 31)) ? -B_Y_SPEED : B_Y_SPEED; // conditional on sign of float
     } else if (ball.m_posX < P_WIDTH/2 - P_X_DISPLACEMENT && within_bounds(player1.m_posY-P_HEIGHT,ball.m_posY,player1.m_posY+P_HEIGHT)) {
         ball.m_dx *= -1;
         ball.m_dy = ((uint32_t)player1.m_dy & (1 << 31)) ? -B_Y_SPEED : B_Y_SPEED;
