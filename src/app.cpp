@@ -61,9 +61,6 @@ void render_update(){
 }
 
 void render_tick(Input& input, float dt){
-    // if (!btn_down(BUTTON_UP) && !btn_down(BUTTON_DOWN) && !btn_down(BUTTON_LEFT) && !btn_down(BUTTON_RIGHT)) return;
-
-    // std::cout << "dt: " << dt << " pY: " << player1.m_posY << " pX:" << player_posX << std::endl;
 
     // Set acceleration
     player1.m_ddy = 0;
