@@ -114,10 +114,10 @@ void render_tick(Input& input, float dt){
     }
     if (ball.m_posY > ARENA_U-B_DIAMETER/2){
         ball.m_posY = ARENA_U-B_DIAMETER/2;
-        ball.m_dy = 0;
+        ball.m_dy *= -1;
     } else if (ball.m_posY < ARENA_D+B_DIAMETER/2){
         ball.m_posY = ARENA_D+B_DIAMETER/2;
-        ball.m_dy = 0;
+        ball.m_dy *= -1;
     }
 
     clear_screen(BACKGROUND_COLOUR);
