@@ -15,7 +15,6 @@ namespace WinGameAlpha{
 extern Render_State render_state;
 
 void app_main();
-
 /* Render on window start */
 void render_init();
 /* Render on gameloop cycle */

@@ -44,14 +44,18 @@ struct Ball_Data{
 
 // Globals
 
+Drawer drawer;
+
 static Player_Data player1;
 static Player_Data player2;
 static Ball_Data ball;
 
+#ifdef DEBUG_INFO
 LARGE_INTEGER time1, time2, end_time;
 float time_diff_other = 0.f;
 float time_diff_render = 0.f;
 float performance_frequency;
+#endif
 
 // Functions
 
@@ -60,26 +64,28 @@ void app_main(){
 }
 
 inline static void render_background(){
-    draw_crect(0,0,ARENA_R*2,ARENA_U*2,ARENA_COLOUR);
+    drawer.draw_crect(0,0,ARENA_R*2,ARENA_U*2,ARENA_COLOUR);
 
-    draw_crect(ball.m_posX,ball.m_posY,B_DIAMETER,B_DIAMETER,B_COLOUR);
-    draw_crect(P_X_DISPLACEMENT,player2.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
-    draw_crect(-P_X_DISPLACEMENT,player1.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
+    drawer.draw_crect(ball.m_posX,ball.m_posY,B_DIAMETER,B_DIAMETER,B_COLOUR);
+    drawer.draw_crect(P_X_DISPLACEMENT,player2.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
+    drawer.draw_crect(-P_X_DISPLACEMENT,player1.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
 
 }
 
 void render_init(){
+#ifdef DEBUG_INFO
     {
         LARGE_INTEGER perf;
         QueryPerformanceFrequency(&perf);
         performance_frequency = (float)perf.QuadPart;
     }
-    clear_screen(BACKGROUND_COLOUR);
+#endif
+    drawer.clear_screen(BACKGROUND_COLOUR);
     render_background();
 }
 
 void render_update(){
-    clear_screen(BACKGROUND_COLOUR);
+    drawer.clear_screen(BACKGROUND_COLOUR);
     render_background();
 }
 
@@ -88,12 +94,12 @@ void render_update(){
 
 void render_tick(Input& input, float dt){
 
-    #ifdef DEBUG_INFO
+#ifdef DEBUG_INFO
     std::cout << "FPS: " << 1/dt << std::endl;
     std::cout << "TDO: " << time_diff_other << "\n" << "TDR: " << time_diff_render << std::endl;
 
     QueryPerformanceCounter(&time1);
-    #endif
+#endif
 
     // Set acceleration
     player1.m_ddy = 0;
@@ -153,7 +159,7 @@ void render_tick(Input& input, float dt){
 #ifdef DEBUG_INFO
     QueryPerformanceCounter(&time2);
 #endif
-    clear_screen(BACKGROUND_COLOUR);
+    drawer.clear_screen(BACKGROUND_COLOUR);
     render_background();
 #ifdef DEBUG_INFO
     QueryPerformanceCounter(&end_time);
