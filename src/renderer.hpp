@@ -1,6 +1,9 @@
 #pragma once
 #include "core.hpp"
+#include "utils.hpp"
 #include <stdint.h>
+#include <math.h>
+#include <iostream>
 
 namespace WinGameAlpha{
 

@@ -1,7 +1,5 @@
 #include "renderer.hpp"
-#include "utils.hpp"
-#include <math.h>
-#include <iostream>
+
 namespace WinGameAlpha{
 
 void clear_screen(uint32_t colour){

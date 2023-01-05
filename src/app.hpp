@@ -3,6 +3,7 @@
 #include "renderer.hpp"
 #include "common.hpp"
 #include "utils.hpp"
+#include <iostream>
 
 /* DEFINES */
 #define APP_WIDTH 800

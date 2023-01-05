@@ -1,5 +1,4 @@
 #include "app.hpp"
-#include <iostream>
 
 //Physics
 #define P_SPEED 50.f
