@@ -17,7 +17,6 @@ namespace WinGameAlpha {
 Render_State render_state;
 
 static bool running = true;
-extern bool changes;
 
 LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
     LRESULT result = 0;
@@ -84,7 +83,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
     Input input = {};
 
-    float delta_time = 0.016666f;
+    float delta_time = 0.016666f; //Initial 60 fps assumption, immediately reassigned after first tick
     LARGE_INTEGER frame_begin_time, frame_end_time;
     QueryPerformanceCounter(&frame_begin_time);
     float performance_frequency;
@@ -137,7 +136,6 @@ case vk:{ \
                     DispatchMessage(&message);
                 }
             }
-            changes = true; // Tell tick to react to changes
         }
 
         // Render every tick

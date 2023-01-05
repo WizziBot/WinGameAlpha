@@ -1,5 +1,8 @@
 #include "app.hpp"
 
+// Enable debug information
+#define DEBUG_INFO
+
 //Physics
 #define P_SPEED 50.f
 #define P_ACCELERATION 500
@@ -25,6 +28,8 @@
 
 namespace WinGameAlpha {
 
+// Structs 
+
 struct Player_Data{
     float m_posY = 0;
     float m_dy = 0;
@@ -37,11 +42,18 @@ struct Ball_Data{
     float m_dx = B_INIT_SPEED;
 };
 
-bool changes = false;
+// Globals
 
 static Player_Data player1;
 static Player_Data player2;
 static Ball_Data ball;
+
+LARGE_INTEGER time1, time2, end_time;
+float time_diff_other = 0.f;
+float time_diff_render = 0.f;
+float performance_frequency;
+
+// Functions
 
 void app_main(){
 
@@ -57,6 +69,11 @@ inline static void render_background(){
 }
 
 void render_init(){
+    {
+        LARGE_INTEGER perf;
+        QueryPerformanceFrequency(&perf);
+        performance_frequency = (float)perf.QuadPart;
+    }
     clear_screen(BACKGROUND_COLOUR);
     render_background();
 }
@@ -70,6 +87,13 @@ void render_update(){
                                         v = v + a * dt - FRICTION*v;
 
 void render_tick(Input& input, float dt){
+
+    #ifdef DEBUG_INFO
+    std::cout << "FPS: " << 1/dt << std::endl;
+    std::cout << "TDO: " << time_diff_other << "\n" << "TDR: " << time_diff_render << std::endl;
+
+    QueryPerformanceCounter(&time1);
+    #endif
 
     // Set acceleration
     player1.m_ddy = 0;
@@ -125,9 +149,17 @@ void render_tick(Input& input, float dt){
         ball.m_dy *= -1;
     }
 
+    // Render bkg
+#ifdef DEBUG_INFO
+    QueryPerformanceCounter(&time2);
+#endif
     clear_screen(BACKGROUND_COLOUR);
     render_background();
-
+#ifdef DEBUG_INFO
+    QueryPerformanceCounter(&end_time);
+    time_diff_other = (float)(time2.QuadPart - time1.QuadPart)/performance_frequency;
+    time_diff_render = (float)(end_time.QuadPart - time2.QuadPart)/performance_frequency;
+#endif
 }
 
 }
