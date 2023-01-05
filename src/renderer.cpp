@@ -68,33 +68,90 @@ void Drawer::draw_crect(float x, float y, float width, float height, uint32_t co
 }
 
 #ifdef USING_OPENCL
+
+#define OCLERR(msg) {cout << "OpenCL Error: " << msg << endl; \
+                    return WGA_FAILURE;}
+
+#ifdef OCL_ERROR_CHECKING
+#define OCLCHECK(arg) if ((err = arg) != CL_SUCCESS) { cout << "OpenCL Internal Error: Code(" << err << ")\n" \
+                      << #arg << endl; \
+                      return WGA_FAILURE;}
+#define OCLCHECKERR(err_no) if (err_no != CL_SUCCESS) { cout << "OpenCL Internal Error: Code(" << err_no << ")" << endl; \
+                      return WGA_FAILURE;}
+#else
+#define OCLCHECK(arg) arg
+#define OCLCHECKERR(err)
+#endif
+
 wga_err Drawer::cl_draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour){
     return WGA_SUCCESS; //remove this
 }
 
-#define OCLERR(msg) cout << "OpenCL Error: " << msg << endl; \
-                     return WGA_FAILURE;
+void Drawer::cl_update(){
+
+};
 
 wga_err Drawer::init_opencl(){
 
-    return WGA_FAILURE; // remove this
+    cl_int err;
+    // Get a platform.
 
-    // Compare platform vendors and identify AMD platforms
-    cl::Platform::get(&platforms);
-    if (platforms.size() == 0){
-        OCLERR("Unable to retrieve platforms.");
+    cl_uint num_platforms;
+    OCLCHECK(clGetPlatformIDs(1, &platform, &num_platforms));
+    if (num_platforms == 0) OCLERR("No Available OpenCL platforms.");
+
+    // Get a device (GPU)
+    cl_uint num_devices;
+    OCLCHECK(clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU , 1, &device, &num_devices));
+    if (num_platforms == 0) OCLERR("No Available OpenCL devices.");
+
+    // Compute work sizes (going to need to be recomputed on resize events)
+    cl_uint src_size = (cl_uint)render_state.width*render_state.height;
+    cl_uint compute_units;
+    size_t global_work_size;
+    size_t local_work_size;
+    size_t num_groups;
+    OCLCHECK(clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &compute_units, NULL));
+    cl_uint ws = 64;
+    global_work_size = compute_units * 7 * ws; // 7 wavefronts per SIMD
+    while((src_size / 10) % global_work_size != 0)
+        global_work_size += ws;
+    local_work_size = ws;
+    num_groups = global_work_size/local_work_size;
+    printf("GWS: %u, LWS: %u, NSI: %u\n",global_work_size,local_work_size,src_size);
+
+    // Create context
+    context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
+    OCLCHECKERR(err);
+
+    // Create queue
+    cl_command_queue_properties prop[] = {CL_QUEUE_PROPERTIES, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, 0};
+
+    queue = clCreateCommandQueueWithProperties(context, device, prop, &err);
+    OCLCHECKERR(err);
+    if (queue == NULL) OCLERR("Queue creation failed.");
+
+    // Create program
+    program = clCreateProgramWithSource(context, 1, &kernel_source, NULL, &err);
+    OCLCHECKERR(err);
+    // Build program
+    err = clBuildProgram(program, 1, &device, "", NULL, NULL);
+    // Compiler error info
+    if(err != CL_SUCCESS) {
+      char buf[0x10000];
+
+      clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0x10000, buf, NULL);
+      printf("\n%s\n", buf);
+      OCLCHECKERR(err);
     }
-    std::vector<cl::Platform>::iterator iter;
-    for(iter = platforms.begin(); iter != platforms.end(); ++iter){
-        if(!strcmp((*iter).getInfo<CL_PLATFORM_VENDOR>().c_str(), "Advanced Micro Devices, Inc.")){
-            break;
-        }
-    }
-    // Create a context
-    cl_context_properties cps[3] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(*iter)(), 0};
-    context = cl::Context(CL_DEVICE_TYPE_GPU, cps);
+
+    // Create kernels
+    draw_rect_kernel = clCreateKernel(program, "draw_rect_kernel", &err);
+    OCLCHECKERR(err);
+    // Create buffers
+    src_buf = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, src_size * sizeof(cl_uint), src_ptr, &err);
+    OCLCHECKERR(err);
     
-    devices = context.getInfo<CL_CONTEXT_DEVICES>();
 
 }
 #endif
