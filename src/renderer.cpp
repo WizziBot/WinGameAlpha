@@ -2,14 +2,22 @@
 
 namespace WinGameAlpha{
 
-Drawer::Drawer(){
+using std::cout;
+using std::cerr;
+using std::endl;
+using std::string;
+
+Drawer::Drawer(wga_err& drawer_err){
+    wga_err err;
 #ifdef USING_OPENCL
-    init_opencl();
+    err = init_opencl();
+#else
+    err = WGA_SUCCESS;
 #endif
+    drawer_err = err;
 }
 
 Drawer::~Drawer(){
-
 }
 
 void Drawer::clear_screen(uint32_t colour){
@@ -60,15 +68,33 @@ void Drawer::draw_crect(float x, float y, float width, float height, uint32_t co
 }
 
 #ifdef USING_OPENCL
-void Drawer::cl_draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour){
-
+wga_err Drawer::cl_draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour){
+    return WGA_SUCCESS; //remove this
 }
 
-void Drawer::init_opencl(){
-    using std::cout;
-    using std::cerr;
-    using std::endl;
-    using std::string;
+#define OCLERR(msg) cout << "OpenCL Error: " << msg << endl; \
+                     return WGA_FAILURE;
+
+wga_err Drawer::init_opencl(){
+
+    return WGA_FAILURE; // remove this
+
+    // Compare platform vendors and identify AMD platforms
+    cl::Platform::get(&platforms);
+    if (platforms.size() == 0){
+        OCLERR("Unable to retrieve platforms.");
+    }
+    std::vector<cl::Platform>::iterator iter;
+    for(iter = platforms.begin(); iter != platforms.end(); ++iter){
+        if(!strcmp((*iter).getInfo<CL_PLATFORM_VENDOR>().c_str(), "Advanced Micro Devices, Inc.")){
+            break;
+        }
+    }
+    // Create a context
+    cl_context_properties cps[3] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(*iter)(), 0};
+    context = cl::Context(CL_DEVICE_TYPE_GPU, cps);
+    
+    devices = context.getInfo<CL_CONTEXT_DEVICES>();
 
 }
 #endif

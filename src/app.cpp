@@ -43,8 +43,9 @@ struct Ball_Data{
 };
 
 // Globals
+extern bool running;
 
-Drawer drawer;
+Drawer *drawer;
 
 static Player_Data player1;
 static Player_Data player2;
@@ -64,15 +65,22 @@ void app_main(){
 }
 
 inline static void render_background(){
-    drawer.draw_crect(0,0,ARENA_R*2,ARENA_U*2,ARENA_COLOUR);
+    drawer->draw_crect(0,0,ARENA_R*2,ARENA_U*2,ARENA_COLOUR);
 
-    drawer.draw_crect(ball.m_posX,ball.m_posY,B_DIAMETER,B_DIAMETER,B_COLOUR);
-    drawer.draw_crect(P_X_DISPLACEMENT,player2.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
-    drawer.draw_crect(-P_X_DISPLACEMENT,player1.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
+    drawer->draw_crect(ball.m_posX,ball.m_posY,B_DIAMETER,B_DIAMETER,B_COLOUR);
+    drawer->draw_crect(P_X_DISPLACEMENT,player2.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
+    drawer->draw_crect(-P_X_DISPLACEMENT,player1.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
 
 }
 
 void render_init(){
+    wga_err err;
+    drawer = new Drawer(err);
+    if (err != WGA_SUCCESS){
+        delete drawer;
+        running = false;
+        std::cout << "Error: Terminated Application." << std::endl;
+    }
 #ifdef DEBUG_INFO
     {
         LARGE_INTEGER perf;
@@ -80,12 +88,12 @@ void render_init(){
         performance_frequency = (float)perf.QuadPart;
     }
 #endif
-    drawer.clear_screen(BACKGROUND_COLOUR);
+    drawer->clear_screen(BACKGROUND_COLOUR);
     render_background();
 }
 
 void render_update(){
-    drawer.clear_screen(BACKGROUND_COLOUR);
+    drawer->clear_screen(BACKGROUND_COLOUR);
     render_background();
 }
 
@@ -159,7 +167,7 @@ void render_tick(Input& input, float dt){
 #ifdef DEBUG_INFO
     QueryPerformanceCounter(&time2);
 #endif
-    drawer.clear_screen(BACKGROUND_COLOUR);
+    drawer->clear_screen(BACKGROUND_COLOUR);
     render_background();
 #ifdef DEBUG_INFO
     QueryPerformanceCounter(&end_time);

@@ -1,9 +1,10 @@
 #pragma once
 
 // Using OpenCL macro
-#define USING_OPENCL
+// #define USING_OPENCL
 
 #ifdef USING_OPENCL
+#define CL_HPP_TARGET_OPENCL_VERSION 300
 #include <CL/opencl.hpp>
 #endif
 
@@ -26,6 +27,9 @@ using std::string;
 class Drawer {
 public:
 
+Drawer(wga_err& drawer_err);
+~Drawer();
+
 /* Clear window to one colour */
 void clear_screen(uint32_t colour);
 /* Draw rectangle absolute (pixel) coordinates*/
@@ -37,7 +41,7 @@ void draw_rect(float x, float y, float width, float height, uint32_t colour);
 void draw_crect(float x, float y, float width, float height, uint32_t colour);
     
 private:
-
+#ifdef USING_OPENCL
 std::vector<cl::Platform> platforms;
 cl::Context context;
 std::vector<cl::Device> devices;
@@ -51,9 +55,6 @@ cl::Buffer bufBuff;
 cl_uint buffer_width;
 cl_uint colour;
 
-Drawer();
-~Drawer();
-
 string kernelStr =
 "__kernel void saxpy(const global float * x,  \n"
 "                    __global float * y,      \n"
@@ -63,10 +64,9 @@ string kernelStr =
 "   y[gid] = a* x[gid];                       \n"
 "}                                            \n";
 
-void init_opencl();
+wga_err init_opencl();
 
-void cl_draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour);
-
+wga_err cl_draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour);
+#endif
 };
-
 }

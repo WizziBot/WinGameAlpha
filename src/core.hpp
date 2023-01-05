@@ -9,4 +9,9 @@ struct Render_State {
     BITMAPINFO bitmap_info;
 };
 
+enum wga_err {
+    WGA_SUCCESS,
+    WGA_FAILURE
+};
+
 }

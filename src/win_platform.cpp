@@ -16,7 +16,7 @@ namespace WinGameAlpha {
 
 Render_State render_state;
 
-static bool running = true;
+bool running = true;
 
 LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
     LRESULT result = 0;
