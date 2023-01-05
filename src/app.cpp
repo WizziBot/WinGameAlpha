@@ -89,12 +89,18 @@ void render_tick(Input& input, float dt){
 
     // Ball collision players AABB
 
-    if (ball.m_posX > P_X_DISPLACEMENT - P_WIDTH/2 && within_bounds(player2.m_posY-P_HEIGHT,ball.m_posY,player2.m_posY+P_HEIGHT)){
-        ball.m_dx *= -1;
-        ball.m_dy = ((uint32_t)player2.m_dy & (1 << 31)) ? -B_Y_SPEED : B_Y_SPEED; // conditional on sign of float
-    } else if (ball.m_posX < P_WIDTH/2 - P_X_DISPLACEMENT && within_bounds(player1.m_posY-P_HEIGHT,ball.m_posY,player1.m_posY+P_HEIGHT)) {
-        ball.m_dx *= -1;
-        ball.m_dy = ((uint32_t)player1.m_dy & (1 << 31)) ? -B_Y_SPEED : B_Y_SPEED;
+    if (within_bounds(P_X_DISPLACEMENT - P_WIDTH/2 - B_DIAMETER/2,ball.m_posX,P_X_DISPLACEMENT + P_WIDTH/2 + B_DIAMETER/2) &&
+        within_bounds(player2.m_posY-P_HEIGHT/2-B_DIAMETER/2,ball.m_posY,player2.m_posY+P_HEIGHT/2+B_DIAMETER/2)){
+        if (ball.m_dx > 0){
+            ball.m_dx *= -1;
+            if (ball.m_dy == 0) ball.m_dy = (((uint32_t)player2.m_dy & (1 << 31)) ? -B_Y_SPEED : B_Y_SPEED); // conditional on sign of float
+        }
+    } else if (within_bounds(-P_WIDTH/2 - P_X_DISPLACEMENT - B_DIAMETER/2,ball.m_posX,P_WIDTH/2 - P_X_DISPLACEMENT + B_DIAMETER/2) &&
+               within_bounds(player1.m_posY-P_HEIGHT-B_DIAMETER/2,ball.m_posY,player1.m_posY+P_HEIGHT/2+B_DIAMETER/2)) {
+        if (ball.m_dx < 0){
+            ball.m_dx *= -1;
+            if (ball.m_dy == 0) ball.m_dy = ((uint32_t)player1.m_dy & (1 << 31)) ? -B_Y_SPEED : B_Y_SPEED;
+        }
     }
 
     // Bounds of arena collisions
