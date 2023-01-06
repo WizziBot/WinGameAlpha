@@ -60,13 +60,15 @@ float performance_frequency;
 
 // Functions
 
-void app_main(){
-
-}
-
 inline static void render_background(){
+    cout << "A1" <<endl;
+    fflush(stdout);
     drawer->draw_crect(0,0,ARENA_R*2,ARENA_U*2,ARENA_COLOUR);
+    cout << "A2" <<endl;
+    fflush(stdout);
     drawer->draw_crect(ball.m_posX,ball.m_posY,B_DIAMETER,B_DIAMETER,B_COLOUR);
+    cout << "A3" <<endl;
+    fflush(stdout);
     drawer->draw_crect(-P_X_DISPLACEMENT,player1.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
     drawer->draw_crect(P_X_DISPLACEMENT,player2.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
 #ifdef USING_OPENCL
@@ -92,10 +94,6 @@ void render_init(){
         performance_frequency = (float)perf.QuadPart;
     }
 #endif
-    if (!running) return;
-    cout << "TT2" << endl;
-    drawer->clear_screen(BACKGROUND_COLOUR);
-    render_background();
 }
 
 void render_update(){

@@ -36,7 +36,7 @@ Drawer::~Drawer(){
 
 void Drawer::clear_screen(uint32_t colour){
     #ifdef USING_OPENCL
-        WGAERRCHECK(cl_draw_rect_px(0,0,render_state.width,render_state.height,colour));
+        WGAERRCHECK(cl_draw_rect_px(0,0,render_state.width,render_state.height-1,colour));
     #else
     uint32_t* pixel = (uint32_t*)render_state.memory;
     for (int y = 0; y < render_state.height; y++){
@@ -110,19 +110,29 @@ void Drawer::cl_draw_finish(){
 
 wga_err Drawer::cl_draw_rect_px(const int x0, const int y0, const int x1, const int y1,const uint32_t colour){
     if (!running) return WGA_SUCCESS;
+    // return WGA_SUCCESS;
     cl_int err = 0;
 
     // Write parameters using buffer map
     // rect_data = {minid,maxid,rect_width,wrap_step,colour}
-    rect_data[0] = y0*render_state.width+x0;
-    rect_data[1] = y1*render_state.width+x1;
-    rect_data[2] = x1-x0;
-    rect_data[3] = render_state.width-x1+x0;
-    rect_data[4] = colour;
+    rect_data = (cl_uint*)clEnqueueMapBuffer(queue, rect_data_buf, CL_TRUE, CL_MAP_WRITE, 0, RECT_DATA_BUF_SIZE * sizeof(cl_uint), 0, NULL, NULL, &err);
+    OCLCHECKERR("Failed to map rect_data pointer onto device buffer.",err);
+    rect_data[0] = (cl_uint)y0*render_state.width+x0;
+    rect_data[1] = (cl_uint)y1*render_state.width+x1;
+    rect_data[2] = (cl_uint)x1-x0;
+    rect_data[3] = (cl_uint)render_state.width-x1+x0;
+    rect_data[4] = (cl_uint)colour;
+    clEnqueueUnmapMemObject(queue, rect_data_buf, rect_data, 0, NULL, NULL);
 
-    // Enqueue Kernel
+    // Enqueue Kernel, also unmap src buf so it can me modified
+    clEnqueueUnmapMemObject(queue, src_buf, src_ptr, 0, NULL, NULL);
     OCLCHECK(clEnqueueNDRangeKernel(queue, draw_rect_kernel, 1, NULL, &global_work_size, &local_work_size, 0, NULL, NULL));
-    
+    clFinish(queue);
+
+    render_state.memory = clEnqueueMapBuffer(queue, src_buf, CL_TRUE, CL_MAP_READ, 0, src_size * sizeof(cl_uint), 0, NULL, NULL, &err);
+    OCLCHECKERR("Failed to map reder state memory onto device source buffer.",err);
+
+    // Sleep(1000);
     return WGA_SUCCESS;
 }
 
@@ -184,20 +194,10 @@ wga_err Drawer::init_opencl(){
     OCLCHECKERR("Failed to create kernel.",err);
 
     // Create buffers
-    src_ptr = (cl_uint*)render_state.memory;
-    src_buf = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, src_size * sizeof(cl_uint), src_ptr, &err);
+    src_buf = clCreateBuffer(context, CL_MEM_HOST_READ_ONLY | CL_MEM_WRITE_ONLY, src_size * sizeof(cl_uint), NULL, &err);
     OCLCHECKERR("Failed to create source buffer.",err);
-    rect_data_buf = clCreateBuffer(context, CL_MEM_WRITE_ONLY, RECT_DATA_BUF_SIZE*sizeof(cl_uint), NULL, &err);
+    rect_data_buf = clCreateBuffer(context, CL_MEM_HOST_WRITE_ONLY | CL_MEM_READ_ONLY, RECT_DATA_BUF_SIZE*sizeof(cl_uint), NULL, &err);
     OCLCHECKERR("Failed to create rect_data buffer.",err);
-
-    // Buffer Mapping
-    // Replace render state buffer
-    VirtualFree(render_state.memory,0,MEM_RELEASE);
-    render_state.memory = clEnqueueMapBuffer(queue, src_buf, CL_TRUE, CL_MAP_READ, 0, src_size * sizeof(cl_uint), 0, NULL, NULL, &err);
-    OCLCHECKERR("Failed to map reder state memory onto device source buffer.",err);
-    // Map argument buffer
-    rect_data = (cl_uint*)clEnqueueMapBuffer(queue, rect_data_buf, CL_TRUE, CL_MAP_WRITE, 0, RECT_DATA_BUF_SIZE * sizeof(cl_uint), 0, NULL, NULL, &err);
-    OCLCHECKERR("Failed to map rect_data pointer onto device buffer.",err);
 
     // Set kernel args
     err = clSetKernelArg(draw_rect_kernel, 0, sizeof(cl_uint*), (cl_uint*) &rect_data_buf);

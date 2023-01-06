@@ -15,6 +15,9 @@
 #define RECT_DATA_BUF_SIZE 5
 #endif
 
+#define APP_WIDTH 800
+#define APP_HEIGHT 450
+
 namespace WinGameAlpha{
 
 extern Render_State render_state;
@@ -63,20 +66,20 @@ cl_uint *src_ptr;
 cl_uint *rect_data;
 
 const char *kernel_source = \
-"__kernel void draw_rect_kernel(const __global uint *rect_data,                              \n\
-                               __global uint *buffer)                                        \n\
-{                                                                                            \n\
-    uint gid = get_global_id(0);                                                             \n\
-    uint overflow = (gid/(rect_data[2])) * rect_data[3];                                     \n\
-    uint idx = rect_data[0] + gid + overflow;                                                \n\
-    uint stride = get_global_size(0);                                                        \n\
-                                                                                             \n\
-    int i = 0;                                                                               \n\
-    while (idx<rect_data[1]){                                                                \n\
-        buffer[idx] = rect_data[4];                                                          \n\
+"__kernel void draw_rect_kernel(const __global uint *rect_data,\n\
+                               __global uint *buffer)\n\
+{\n\
+    uint gid = get_global_id(0);\n\
+    uint overflow = (gid/rect_data[2]) * rect_data[3];\n\
+    uint idx = rect_data[0] + gid + overflow;\n\
+    uint stride = get_global_size(0);\n\
+\n\
+    int i = 0;\n\
+    while (idx<rect_data[1]){\n\
+        buffer[idx] = rect_data[4];\n\
         idx = rect_data[0] + gid + stride*i + ((gid+stride*i)/(rect_data[2])) * rect_data[3];\n\
-        i++;                                                                                 \n\
-    }                                                                                        \n\
+        i++;\n\
+    }\n\
 }";
 
 /* Initialize OpenCL API*/
