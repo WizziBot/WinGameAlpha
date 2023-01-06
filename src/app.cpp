@@ -97,6 +97,9 @@ void render_init(){
 }
 
 void render_update(){
+#ifdef USING_OPENCL
+    WGAERRCHECK(drawer->cl_resize());
+#endif
     drawer->clear_screen(BACKGROUND_COLOUR);
     render_background();
 }

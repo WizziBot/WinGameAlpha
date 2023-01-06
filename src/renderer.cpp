@@ -3,6 +3,7 @@
 namespace WinGameAlpha{
 
 extern bool running;
+extern bool resizing;
 
 using std::cout;
 using std::cerr;
@@ -35,6 +36,7 @@ Drawer::~Drawer(){
 }
 
 void Drawer::clear_screen(uint32_t colour){
+    if (resizing || !running) return;
     #ifdef USING_OPENCL
         WGAERRCHECK(cl_draw_rect_px(0,0,render_state.width,render_state.height-1,colour));
     #else
@@ -48,6 +50,7 @@ void Drawer::clear_screen(uint32_t colour){
 }
 
 void Drawer::draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour){
+    if (resizing || !running) return;
     x0 = clamp(0, x0, render_state.width);
     x1 = clamp(0, x1, render_state.width);
     y0 = clamp(0, y0, render_state.height);
@@ -92,7 +95,7 @@ void Drawer::cl_draw_finish(){
 #endif
 }
 
-#ifdef USING_OPENCL
+#ifdef USING_OPENCL // Using OpenCL to render
 
 #define OCLERR(msg) {cout << "OpenCL Error: " << msg << endl; \
                     return WGA_FAILURE;}
@@ -108,8 +111,20 @@ void Drawer::cl_draw_finish(){
 #define OCLCHECKERR(err)
 #endif
 
+wga_err Drawer::cl_resize(){
+    if (resizing || !running) return WGA_SUCCESS;
+    clFlush(queue);
+    cout << "RESIZE" << endl;
+    clReleaseMemObject(src_buf);
+    cout << "RESIZE" << endl;
+    src_size = render_state.width*render_state.height;
+    cl_int err;
+    src_buf = clCreateBuffer(context, CL_MEM_HOST_READ_ONLY | CL_MEM_WRITE_ONLY, src_size * sizeof(cl_uint), NULL, &err);
+    OCLCHECKERR("Failed to create source buffer on resize.",err);
+    return WGA_SUCCESS;
+}
+
 wga_err Drawer::cl_draw_rect_px(const int x0, const int y0, const int x1, const int y1,const uint32_t colour){
-    if (!running) return WGA_SUCCESS;
     // return WGA_SUCCESS;
     cl_int err = 0;
 
@@ -125,7 +140,8 @@ wga_err Drawer::cl_draw_rect_px(const int x0, const int y0, const int x1, const 
     clEnqueueUnmapMemObject(queue, rect_data_buf, rect_data, 0, NULL, NULL);
 
     // Enqueue Kernel, also unmap src buf so it can me modified
-    clEnqueueUnmapMemObject(queue, src_buf, src_ptr, 0, NULL, NULL);
+    clEnqueueUnmapMemObject(queue, src_buf, render_state.memory, 0, NULL, NULL);
+
     OCLCHECK(clEnqueueNDRangeKernel(queue, draw_rect_kernel, 1, NULL, &global_work_size, &local_work_size, 0, NULL, NULL));
     clFinish(queue);
 

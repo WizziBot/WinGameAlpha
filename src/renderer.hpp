@@ -15,9 +15,6 @@
 #define RECT_DATA_BUF_SIZE 5
 #endif
 
-#define APP_WIDTH 800
-#define APP_HEIGHT 450
-
 namespace WinGameAlpha{
 
 extern Render_State render_state;
@@ -44,6 +41,8 @@ void draw_rect(float x, float y, float width, float height, uint32_t colour);
 void draw_crect(float x, float y, float width, float height, uint32_t colour);
 /* Wrapper for clFinish(queue) */
 void cl_draw_finish();
+/* Resize event */
+wga_err cl_resize();
 
 private:
 #ifdef USING_OPENCL
@@ -60,8 +59,6 @@ cl_kernel draw_rect_kernel;
 cl_mem src_buf;
 cl_mem rect_data_buf;
 
-// Pointer to render state memory
-cl_uint *src_ptr;
 // Buffer Map into parameter list of kernel
 cl_uint *rect_data;
 

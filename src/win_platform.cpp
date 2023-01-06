@@ -17,6 +17,7 @@ namespace WinGameAlpha {
 Render_State render_state;
 
 bool running = false;
+bool resizing = false;
 
 LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
     fflush(stdout);
@@ -27,8 +28,12 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
             app_cleanup();
             running = false;
         } break;
-
+        case WM_SIZING: {
+            cout << "RESIZING EVENT" << endl;
+            resizing = true;
+        } break;
         case WM_SIZE: {
+            resizing = false;
             RECT rect;
             GetClientRect(hWnd,&rect);
             render_state.width = rect.right - rect.left;
@@ -45,6 +50,7 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
             render_state.bitmap_info.bmiHeader.biHeight = render_state.height;
             
             // Render every window size update
+            cout << "RESIZE EVENT" << endl;
             if (running) render_update();
         } break;
 

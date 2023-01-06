@@ -6,9 +6,9 @@
 #include <iostream>
 
 /* DEFINES */
-#define APP_WIDTH 800
-#define APP_HEIGHT 450
-#define TICK_DELAY 1
+#define APP_WIDTH 800*4
+#define APP_HEIGHT 450*4
+#define TICK_DELAY 10
 
 namespace WinGameAlpha{
 
