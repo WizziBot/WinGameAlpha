@@ -16,9 +16,10 @@ namespace WinGameAlpha {
 
 Render_State render_state;
 
-bool running = true;
+bool running = false;
 
 LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
+    fflush(stdout);
     LRESULT result = 0;
     switch(Msg){
         case WM_CLOSE:
@@ -43,7 +44,7 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
             render_state.bitmap_info.bmiHeader.biHeight = render_state.height;
             
             // Render every window size update
-            render_update();
+            if (running) render_update();
         } break;
 
         default: {
@@ -71,16 +72,14 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     window_class.style = CS_HREDRAW | CS_VREDRAW;
     window_class.lpszClassName = (LPCTSTR)"Game Window Class";
     window_class.lpfnWndProc = (WNDPROC)window_callback;
+
     // Register Class
     RegisterClass(&window_class);
-
     // Create Window
     HWND window = CreateWindowA((LPCSTR)window_class.lpszClassName, (LPCSTR)"WinGameAlpha", WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, W_WIDTH, W_HEIGHT, 0, 0, hInstance,0);
     HDC hdc = GetDC(window);
-
     // Frist time render
     render_init();
-
     Input input = {};
 
     float delta_time = 0.016666f; //Initial 60 fps assumption, immediately reassigned after first tick
@@ -93,6 +92,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         performance_frequency = (float)perf.QuadPart;
     }
 
+    running = true;
     while (running){
         MSG message;
 

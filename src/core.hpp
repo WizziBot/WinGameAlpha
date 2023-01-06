@@ -1,6 +1,9 @@
 #pragma once
 #include <windows.h>
 
+// Using OpenCL macro
+#define USING_OPENCL
+
 namespace WinGameAlpha{
 
 struct Render_State {

@@ -2,6 +2,8 @@
 
 namespace WinGameAlpha{
 
+extern bool running;
+
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -14,10 +16,20 @@ Drawer::Drawer(wga_err& drawer_err){
 #else
     err = WGA_SUCCESS;
 #endif
+    std::cout << "T8 " << err << std::endl;
     drawer_err = err;
 }
 
 Drawer::~Drawer(){
+#ifdef USING_OPENCL
+    clFlush(queue);
+    clReleaseCommandQueue(queue);
+    clReleaseMemObject(src_buf);
+    clReleaseKernel(draw_rect_kernel);
+    clReleaseDevice(device);
+    clReleaseContext(context);
+    clReleaseProgram(program);
+#endif
 }
 
 void Drawer::clear_screen(uint32_t colour){
@@ -36,7 +48,7 @@ void Drawer::draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour){
     y1 = clamp(0, y1, render_state.height);
 
 #ifdef USING_OPENCL
-    cl_draw_rect_px(x0,y0,x1,y1,colour);
+    WGAERRCHECK(cl_draw_rect_px(x0,y0,x1,y1,colour));
 #else
     uint32_t* pixel = (uint32_t*)render_state.memory;
     for (int y = y0; y < y1 ; y++){
@@ -76,7 +88,7 @@ void Drawer::draw_crect(float x, float y, float width, float height, uint32_t co
 #define OCLCHECK(arg) if ((err = arg) != CL_SUCCESS) { cout << "OpenCL Internal Error: Code(" << err << ")\n" \
                       << #arg << endl; \
                       return WGA_FAILURE;}
-#define OCLCHECKERR(err_no) if (err_no != CL_SUCCESS) { cout << "OpenCL Internal Error: Code(" << err_no << ")" << endl; \
+#define OCLCHECKERR(msg,err_no) if (err_no != CL_SUCCESS) { cout << "OpenCL Internal Error: "<< msg <<" Code(" << err_no << ")" << endl; \
                       return WGA_FAILURE;}
 #else
 #define OCLCHECK(arg) arg
@@ -84,11 +96,35 @@ void Drawer::draw_crect(float x, float y, float width, float height, uint32_t co
 #endif
 
 wga_err Drawer::cl_draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour){
-    return WGA_SUCCESS; //remove this
+    // Set kernel args
+    cl_int err = 0;
+    err += clSetKernelArg(draw_rect_kernel, 0, sizeof(cl_uint), (cl_uint*) &x0);
+    err += clSetKernelArg(draw_rect_kernel, 1, sizeof(cl_uint), (cl_uint*) &y0);
+    err += clSetKernelArg(draw_rect_kernel, 2, sizeof(cl_uint), (cl_uint*) &x1);
+    err += clSetKernelArg(draw_rect_kernel, 3, sizeof(cl_uint), (cl_uint*) &y1);
+    err += clSetKernelArg(draw_rect_kernel, 4, sizeof(cl_uint), (cl_uint*) &colour);
+    err += clSetKernelArg(draw_rect_kernel, 5, sizeof(cl_uint), (cl_uint*) &render_state.width);
+    err += clSetKernelArg(draw_rect_kernel, 6, sizeof(void*), (void*) &src_buf);
+    OCLCHECKERR("Failed to set kernel arguments.",err);
+    // Enqueue Kernel
+    OCLCHECK(clEnqueueNDRangeKernel(queue, draw_rect_kernel, 1, NULL, &global_work_size, &local_work_size, 0, NULL, NULL));
+    
+    return WGA_SUCCESS;
 }
 
-void Drawer::cl_update(){
+wga_err Drawer::cl_update(){
+    cl_int err;
+    OCLCHECK(clFinish(queue));
+    // Copy memory from device into render state buffer
+    OCLCHECK(clEnqueueReadBuffer(queue,
+                                src_buf,
+                                CL_TRUE,
+                                0,
+                                src_size * sizeof(cl_uint),
+                                (void*)render_state.memory,
+                                0, NULL, NULL));
 
+    return WGA_SUCCESS;
 };
 
 wga_err Drawer::init_opencl(){
@@ -97,43 +133,47 @@ wga_err Drawer::init_opencl(){
     // Get a platform.
 
     cl_uint num_platforms;
+    std::cout << "T9 " << std::endl;
     OCLCHECK(clGetPlatformIDs(1, &platform, &num_platforms));
     if (num_platforms == 0) OCLERR("No Available OpenCL platforms.");
-
+    std::cout << "T10 " << std::endl;
+    fflush(stdout);
     // Get a device (GPU)
     cl_uint num_devices;
     OCLCHECK(clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU , 1, &device, &num_devices));
     if (num_platforms == 0) OCLERR("No Available OpenCL devices.");
 
     // Compute work sizes (going to need to be recomputed on resize events)
-    cl_uint src_size = (cl_uint)render_state.width*render_state.height;
+    src_size = (cl_uint)render_state.width*render_state.height;
+    std::cout << "T11 " << src_size << std::endl;
+    fflush(stdout);
     cl_uint compute_units;
-    size_t global_work_size;
-    size_t local_work_size;
-    size_t num_groups;
+
     OCLCHECK(clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &compute_units, NULL));
-    cl_uint ws = 64;
+    
+    cl_uint ws = WORK_SIZE;
     global_work_size = compute_units * 7 * ws; // 7 wavefronts per SIMD
-    while((src_size / 10) % global_work_size != 0)
-        global_work_size += ws;
+    std::cout << "T12 " << global_work_size << std::endl;
+    fflush(stdout);
+    // while(src_size % global_work_size != 0)
+    //     global_work_size += ws;
     local_work_size = ws;
-    num_groups = global_work_size/local_work_size;
     printf("GWS: %u, LWS: %u, NSI: %u\n",global_work_size,local_work_size,src_size);
 
     // Create context
     context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
-    OCLCHECKERR(err);
-
+    OCLCHECKERR("Failed to create context.",err);
     // Create queue
     cl_command_queue_properties prop[] = {CL_QUEUE_PROPERTIES, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, 0};
 
     queue = clCreateCommandQueueWithProperties(context, device, prop, &err);
-    OCLCHECKERR(err);
+    OCLCHECKERR("Failed to create command queue.",err);
     if (queue == NULL) OCLERR("Queue creation failed.");
 
     // Create program
     program = clCreateProgramWithSource(context, 1, &kernel_source, NULL, &err);
-    OCLCHECKERR(err);
+    OCLCHECKERR("Failed to create program.",err);
+
     // Build program
     err = clBuildProgram(program, 1, &device, "", NULL, NULL);
     // Compiler error info
@@ -142,17 +182,21 @@ wga_err Drawer::init_opencl(){
 
       clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0x10000, buf, NULL);
       printf("\n%s\n", buf);
-      OCLCHECKERR(err);
+      OCLCHECKERR("Failed to build program.",err);
     }
+    std::cout << "T13 " << std::endl;
+    fflush(stdout);
 
     // Create kernels
     draw_rect_kernel = clCreateKernel(program, "draw_rect_kernel", &err);
-    OCLCHECKERR(err);
-    // Create buffers
-    src_buf = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, src_size * sizeof(cl_uint), src_ptr, &err);
-    OCLCHECKERR(err);
-    
+    OCLCHECKERR("Failed to create kernel.",err);
 
+    // Create buffers
+    src_ptr = (cl_uint*)render_state.memory;
+    src_buf = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, src_size * sizeof(cl_uint), src_ptr, &err);
+    OCLCHECKERR("Failed to create source buffer.",err);
+
+    return WGA_SUCCESS;
 }
 #endif
 

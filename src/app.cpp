@@ -70,17 +70,22 @@ inline static void render_background(){
     drawer->draw_crect(ball.m_posX,ball.m_posY,B_DIAMETER,B_DIAMETER,B_COLOUR);
     drawer->draw_crect(P_X_DISPLACEMENT,player2.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
     drawer->draw_crect(-P_X_DISPLACEMENT,player1.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
-
+#ifdef USING_OPENCL
+    WGAERRCHECK(drawer->cl_update());
+#endif
 }
 
 void render_init(){
     wga_err err;
     drawer = new Drawer(err);
+    std::cout << "T0" << std::endl;
     if (err != WGA_SUCCESS){
-        delete drawer;
-        running = false;
-        std::cout << "Error: Terminated Application." << std::endl;
+        std::cout << "T1 " << err << std::endl;
+        if(drawer) delete drawer;
+        WGACHECKERRNO("Failed to instantiate drawer.",err);
     }
+    std::cout << "T2" << std::endl;
+    fflush(stdout);
 #ifdef DEBUG_INFO
     {
         LARGE_INTEGER perf;
