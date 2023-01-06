@@ -91,6 +91,12 @@ void Drawer::draw_crect(float x, float y, float width, float height, uint32_t co
     draw_rect_px(x0,y0,x1,y1,colour);
 }
 
+void Drawer::cl_draw_finish(){
+#ifdef USING_OPENCL
+    clFinish(queue);
+#endif
+}
+
 #ifdef USING_OPENCL
 
 #define OCLERR(msg) {cout << "OpenCL Error: " << msg << endl; \
@@ -112,20 +118,18 @@ wga_err Drawer::cl_draw_rect_px(const int x0, const int y0, const int x1, const 
     cl_int err = 0;
 
     // Pass args
-    if (mutex_event != NULL) clWaitForEvents(1,&mutex_event);
-    clEnqueueWriteBuffer(queue, x0_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&x0, 0, NULL, NULL);
-    clEnqueueWriteBuffer(queue, y0_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&y0, 0, NULL, NULL);
-    clEnqueueWriteBuffer(queue, x1_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&x1, 0, NULL, NULL);
-    clEnqueueWriteBuffer(queue, y1_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&y1, 0, NULL, NULL);
-    clEnqueueWriteBuffer(queue, col_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&colour, 0, NULL, NULL);
-    clFinish(queue);
-
+    clEnqueueWriteBuffer(queue, x0_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&x0, 0, NULL, &param_evts[0]);
+    clEnqueueWriteBuffer(queue, y0_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&y0, 0, NULL, &param_evts[1]);
+    clEnqueueWriteBuffer(queue, x1_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&x1, 0, NULL, &param_evts[2]);
+    clEnqueueWriteBuffer(queue, y1_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&y1, 0, NULL, &param_evts[3]);
+    clEnqueueWriteBuffer(queue, col_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&colour, 0, NULL, &param_evts[4]);
+    clWaitForEvents(5,param_evts);
     // Enqueue Kernel
-    clWaitForEvents(1,&mutex_event); //safety mutex
-    OCLCHECK(clEnqueueNDRangeKernel(queue, draw_rect_kernel, 1, NULL, &global_work_size, &local_work_size, 0, NULL,&mutex_event));
+    OCLCHECK(clEnqueueNDRangeKernel(queue, draw_rect_kernel, 1, NULL, &global_work_size, &local_work_size, 0, NULL, NULL));
     
     return WGA_SUCCESS;
 }
+
 
 wga_err Drawer::init_opencl(){
 
@@ -133,11 +137,9 @@ wga_err Drawer::init_opencl(){
     // Get a platform.
 
     cl_uint num_platforms;
-    std::cout << "T9 " << std::endl;
     OCLCHECK(clGetPlatformIDs(1, &platform, &num_platforms));
     if (num_platforms == 0) OCLERR("No Available OpenCL platforms.");
-    std::cout << "T10 " << std::endl;
-    fflush(stdout);
+
     // Get a device (GPU)
     cl_uint num_devices;
     OCLCHECK(clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU , 1, &device, &num_devices));
@@ -149,7 +151,7 @@ wga_err Drawer::init_opencl(){
     cl_uint compute_units;
     OCLCHECK(clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &compute_units, NULL));
     
-    cl_uint ws = WORK_SIZE;
+    cl_uint ws = 64;
     global_work_size = compute_units * 7 * ws; // 7 wavefronts per SIMD
     // while(src_size % global_work_size != 0)
     //     global_work_size += ws;
@@ -184,8 +186,7 @@ wga_err Drawer::init_opencl(){
     // Create kernels
     draw_rect_kernel = clCreateKernel(program, "draw_rect_kernel", &err);
     OCLCHECKERR("Failed to create kernel.",err);
-    cout << "TT" << endl;
-    fflush(stdout); 
+
     // Create buffers
     src_ptr = (cl_uint*)render_state.memory;
     src_buf = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, src_size * sizeof(cl_uint), src_ptr, &err);
@@ -200,10 +201,12 @@ wga_err Drawer::init_opencl(){
     OCLCHECKERR("Failed to create source buffer.",err);
     col_buf = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(cl_uint), NULL, &err);
     OCLCHECKERR("Failed to create source buffer.",err);
+    
     // Replace render state buffer
     VirtualFree(render_state.memory,0,MEM_RELEASE);
     render_state.memory = clEnqueueMapBuffer(queue, src_buf, CL_TRUE, CL_MAP_READ, 0, src_size * sizeof(cl_uint), 0, NULL, NULL, &err);
     OCLCHECKERR("Failed to map reder state memory to device source buffer.",err);
+
     // Set kernel args
     err |= clSetKernelArg(draw_rect_kernel, 0, sizeof(cl_uint*), (cl_uint*) &x0_buf);
     err |= clSetKernelArg(draw_rect_kernel, 1, sizeof(cl_uint*), (cl_uint*) &y0_buf);

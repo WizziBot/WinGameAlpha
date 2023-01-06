@@ -145,8 +145,12 @@ case vk:{ \
         render_tick(input,delta_time);
 
         // Overwrite screen buffer
-        if (render_state.memory)
+        if (render_state.memory){
+            #ifdef USING_OPENCL
+            
+            #endif
             StretchDIBits(hdc, 0, 0, render_state.width, render_state.height, 0, 0, render_state.width, render_state.height, render_state.memory, &render_state.bitmap_info, DIB_RGB_COLORS, SRCCOPY);
+        }
         Sleep(TICK_DELAY);
 
         // SPF calculation

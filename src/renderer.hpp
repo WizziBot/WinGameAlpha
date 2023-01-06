@@ -12,7 +12,6 @@
 #define OCL_ERROR_CHECKING
 #define CL_TARGET_OPENCL_VERSION 300
 #include <CL/cl.h>
-#define WORK_SIZE 64
 #endif
 
 namespace WinGameAlpha{
@@ -39,6 +38,8 @@ void draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour);
 void draw_rect(float x, float y, float width, float height, uint32_t colour);
 /* Centered version of draw_rect where 0,0 is the middle of the window */
 void draw_crect(float x, float y, float width, float height, uint32_t colour);
+/* Wrapper for clFinish(queue) */
+void cl_draw_finish();
 
 private:
 #ifdef USING_OPENCL
@@ -61,7 +62,8 @@ cl_mem col_buf;
 
 cl_uint *src_ptr;
 
-cl_event mutex_event;
+cl_event mutex_event = NULL;
+cl_event param_evts[5];
 
 const char *kernel_source = \
 "__kernel void draw_rect_kernel(__global uint *x0,                      \n\
@@ -80,10 +82,11 @@ const char *kernel_source = \
     uint overflow = (gid/(rect_width)) * wrap_step;                     \n\
     uint idx = minid + gid + overflow;                                  \n\
     uint stride = get_global_size(0);                                   \n\
-                                                                        \n\
+    int i = 0;                                                          \n\
     while (idx<maxid){                                                  \n\
         buffer[idx] = *colour;                                          \n\
-        idx = idx + stride + ((stride)/(rect_width))*wrap_step; \n\
+        idx = minid + gid + stride*i + ((gid+stride*i)/(rect_width)) * wrap_step; \n\
+        i++;                                                            \n\
     }                                                                   \n\
 }";
 

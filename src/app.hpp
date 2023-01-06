@@ -8,7 +8,7 @@
 /* DEFINES */
 #define APP_WIDTH 800
 #define APP_HEIGHT 450
-#define TICK_DELAY 10
+#define TICK_DELAY 1
 
 namespace WinGameAlpha{
 

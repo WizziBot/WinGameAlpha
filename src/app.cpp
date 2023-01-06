@@ -66,9 +66,13 @@ void app_main(){
 
 inline static void render_background(){
     drawer->draw_crect(0,0,ARENA_R*2,ARENA_U*2,ARENA_COLOUR);
+    drawer->cl_draw_finish();
     drawer->draw_crect(ball.m_posX,ball.m_posY,B_DIAMETER,B_DIAMETER,B_COLOUR);
-    drawer->draw_crect(P_X_DISPLACEMENT,player2.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
+    drawer->cl_draw_finish();
     drawer->draw_crect(-P_X_DISPLACEMENT,player1.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
+    drawer->draw_crect(P_X_DISPLACEMENT,player2.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
+    drawer->cl_draw_finish();
+
 }
 
 void app_cleanup(){

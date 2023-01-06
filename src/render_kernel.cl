@@ -17,8 +17,10 @@ __kernel void draw_rect_kernel(__global uint *x0,
     uint idx = minid + gid + overflow;
     uint stride = get_global_size(0);
 
+    int i = 0;
     while (idx<maxid){
         buffer[idx] = *colour;
-        idx = idx + stride + ((stride)/(rect_width))*wrap_step;
+        idx = minid + gid + stride*i + ((gid+stride*i)/(rect_width)) * wrap_step;
+        i++;
     }
 }
