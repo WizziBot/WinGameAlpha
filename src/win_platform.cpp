@@ -35,10 +35,12 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
             render_state.height = rect.bottom - rect.top;
             int buffer_size = render_state.width*render_state.height*sizeof(uint32_t); //3 bytes for RGB and 1 byte padding
 
-            if (render_state.memory) VirtualFree(render_state.memory,0,MEM_RELEASE);
-            render_state.memory = VirtualAlloc(0, buffer_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-            if (render_state.memory == NULL){
-                std::cerr << "Memory assignment failure: Render state" << std::endl;
+            if(!running){
+                if (render_state.memory) VirtualFree(render_state.memory,0,MEM_RELEASE);
+                render_state.memory = VirtualAlloc(0, buffer_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+                if (render_state.memory == NULL){
+                    std::cerr << "Memory assignment failure: Render state" << std::endl;
+                }
             }
     
             render_state.bitmap_info.bmiHeader.biWidth = render_state.width;
@@ -143,7 +145,8 @@ case vk:{ \
         render_tick(input,delta_time);
 
         // Overwrite screen buffer
-        StretchDIBits(hdc, 0, 0, render_state.width, render_state.height, 0, 0, render_state.width, render_state.height, render_state.memory, &render_state.bitmap_info, DIB_RGB_COLORS, SRCCOPY);
+        if (render_state.memory)
+            StretchDIBits(hdc, 0, 0, render_state.width, render_state.height, 0, 0, render_state.width, render_state.height, render_state.memory, &render_state.bitmap_info, DIB_RGB_COLORS, SRCCOPY);
         Sleep(TICK_DELAY);
 
         // SPF calculation

@@ -16,7 +16,6 @@ Drawer::Drawer(wga_err& drawer_err){
 #else
     err = WGA_SUCCESS;
 #endif
-    std::cout << "T8 " << err << std::endl;
     drawer_err = err;
 }
 
@@ -41,12 +40,16 @@ Drawer::~Drawer(){
 }
 
 void Drawer::clear_screen(uint32_t colour){
+    #ifdef USING_OPENCL
+        WGAERRCHECK(cl_draw_rect_px(0,0,render_state.width,render_state.height,colour));
+    #else
     uint32_t* pixel = (uint32_t*)render_state.memory;
     for (int y = 0; y < render_state.height; y++){
         for (int x = 0; x < render_state.width; x++){
             *pixel++ = colour; 
         }
     }
+    #endif
 }
 
 void Drawer::draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour){
@@ -54,6 +57,7 @@ void Drawer::draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour){
     x1 = clamp(0, x1, render_state.width);
     y0 = clamp(0, y0, render_state.height);
     y1 = clamp(0, y1, render_state.height);
+    if (x0 == x1 || y0 == y1) return;
 
 #ifdef USING_OPENCL
     WGAERRCHECK(cl_draw_rect_px(x0,y0,x1,y1,colour));
@@ -103,40 +107,25 @@ void Drawer::draw_crect(float x, float y, float width, float height, uint32_t co
 #define OCLCHECKERR(err)
 #endif
 
-wga_err Drawer::cl_draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour){
+wga_err Drawer::cl_draw_rect_px(const int x0, const int y0, const int x1, const int y1,const uint32_t colour){
+    if (!running) return WGA_SUCCESS;
     cl_int err = 0;
-    cout << "T111" << endl;
-    fflush(stdout);
+
     // Pass args
-    clEnqueueWriteBuffer(queue, x0_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&x0, 1, &mutex_event, NULL);
-    clEnqueueWriteBuffer(queue, y0_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&y0, 1, &mutex_event, NULL);
-    clEnqueueWriteBuffer(queue, x1_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&x1, 1, &mutex_event, NULL);
-    clEnqueueWriteBuffer(queue, y1_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&y1, 1, &mutex_event, NULL);
-    clEnqueueWriteBuffer(queue, col_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&colour, 1, &mutex_event, NULL);
+    if (mutex_event != NULL) clWaitForEvents(1,&mutex_event);
+    clEnqueueWriteBuffer(queue, x0_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&x0, 0, NULL, NULL);
+    clEnqueueWriteBuffer(queue, y0_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&y0, 0, NULL, NULL);
+    clEnqueueWriteBuffer(queue, x1_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&x1, 0, NULL, NULL);
+    clEnqueueWriteBuffer(queue, y1_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&y1, 0, NULL, NULL);
+    clEnqueueWriteBuffer(queue, col_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&colour, 0, NULL, NULL);
     clFinish(queue);
-    cout << "T222" << endl;
-    fflush(stdout);
+
     // Enqueue Kernel
     clWaitForEvents(1,&mutex_event); //safety mutex
     OCLCHECK(clEnqueueNDRangeKernel(queue, draw_rect_kernel, 1, NULL, &global_work_size, &local_work_size, 0, NULL,&mutex_event));
     
     return WGA_SUCCESS;
 }
-
-wga_err Drawer::cl_update(){
-    cl_int err;
-    OCLCHECK(clFinish(queue));
-    // Copy memory from device into render state buffer
-    OCLCHECK(clEnqueueReadBuffer(queue,
-                                src_buf,
-                                CL_TRUE,
-                                0,
-                                src_size * sizeof(cl_uint),
-                                (void*)render_state.memory,
-                                0, NULL, NULL));
-
-    return WGA_SUCCESS;
-};
 
 wga_err Drawer::init_opencl(){
 
@@ -195,7 +184,8 @@ wga_err Drawer::init_opencl(){
     // Create kernels
     draw_rect_kernel = clCreateKernel(program, "draw_rect_kernel", &err);
     OCLCHECKERR("Failed to create kernel.",err);
-
+    cout << "TT" << endl;
+    fflush(stdout); 
     // Create buffers
     src_ptr = (cl_uint*)render_state.memory;
     src_buf = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, src_size * sizeof(cl_uint), src_ptr, &err);
@@ -210,7 +200,10 @@ wga_err Drawer::init_opencl(){
     OCLCHECKERR("Failed to create source buffer.",err);
     col_buf = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(cl_uint), NULL, &err);
     OCLCHECKERR("Failed to create source buffer.",err);
-
+    // Replace render state buffer
+    VirtualFree(render_state.memory,0,MEM_RELEASE);
+    render_state.memory = clEnqueueMapBuffer(queue, src_buf, CL_TRUE, CL_MAP_READ, 0, src_size * sizeof(cl_uint), 0, NULL, NULL, &err);
+    OCLCHECKERR("Failed to map reder state memory to device source buffer.",err);
     // Set kernel args
     err |= clSetKernelArg(draw_rect_kernel, 0, sizeof(cl_uint*), (cl_uint*) &x0_buf);
     err |= clSetKernelArg(draw_rect_kernel, 1, sizeof(cl_uint*), (cl_uint*) &y0_buf);

@@ -66,13 +66,9 @@ void app_main(){
 
 inline static void render_background(){
     drawer->draw_crect(0,0,ARENA_R*2,ARENA_U*2,ARENA_COLOUR);
-
     drawer->draw_crect(ball.m_posX,ball.m_posY,B_DIAMETER,B_DIAMETER,B_COLOUR);
     drawer->draw_crect(P_X_DISPLACEMENT,player2.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
     drawer->draw_crect(-P_X_DISPLACEMENT,player1.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
-#ifdef USING_OPENCL
-    WGAERRCHECK(drawer->cl_update());
-#endif
 }
 
 void app_cleanup(){
@@ -82,14 +78,10 @@ void app_cleanup(){
 void render_init(){
     wga_err err;
     drawer = new Drawer(err);
-    std::cout << "T0" << std::endl;
     if (err != WGA_SUCCESS){
-        std::cout << "T1 " << err << std::endl;
         if(drawer) delete drawer;
         WGACHECKERRNO("Failed to instantiate drawer.",err);
     }
-    std::cout << "T2" << std::endl;
-    fflush(stdout);
 #ifdef DEBUG_INFO
     {
         LARGE_INTEGER perf;
@@ -97,6 +89,8 @@ void render_init(){
         performance_frequency = (float)perf.QuadPart;
     }
 #endif
+    if (!running) return;
+    cout << "TT2" << endl;
     drawer->clear_screen(BACKGROUND_COLOUR);
     render_background();
 }
@@ -175,6 +169,7 @@ void render_tick(Input& input, float dt){
     // Render bkg
 #ifdef DEBUG_INFO
     QueryPerformanceCounter(&time2);
+    if (!running) return;
 #endif
     drawer->clear_screen(BACKGROUND_COLOUR);
     render_background();
