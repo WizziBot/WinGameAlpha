@@ -54,29 +54,38 @@ cl_context context;
 cl_command_queue queue;
 cl_program program;
 cl_kernel draw_rect_kernel;
+
 cl_mem src_buf;
+cl_mem x0_buf;
+cl_mem y0_buf;
+cl_mem x1_buf;
+cl_mem y1_buf;
+cl_mem col_buf;
+
 cl_uint *src_ptr;
 
+cl_event mutex_event;
+
 const char *kernel_source = \
-"__kernel void draw_rect_kernel(const uint x0,                      \n\
-                               const uint y0,                       \n\
-                               const uint x1,                       \n\
-                               const uint y1,                       \n\
-                               const uint colour,                   \n\
-                               const uint buffer_width,             \n\
-                               __global uint *buffer)               \n\
-{                                                                   \n\
-    uint minid = y0 * buffer_width + x0;                            \n\
-    uint maxid = y1 * buffer_width + x1;                            \n\
-    uint gid = get_global_id(0);                                    \n\
-    uint overflow = (gid/(x1-x0)) * (buffer_width-x1+x0);           \n\
-    uint idx = minid + gid + overflow;                              \n\
-    uint stride = get_global_size(0);                               \n\
-                                                                    \n\
-    while (idx<maxid){                                              \n\
-        buffer[idx] = colour;                                       \n\
-        idx = idx + stride + (stride/(x1-x0))*(buffer_width-x1+x0); \n\
-    }                                                               \n\
+"__kernel void draw_rect_kernel(__global uint *x0,                      \n\
+                               __global uint *y0,                       \n\
+                               __global uint *x1,                       \n\
+                               __global uint *y1,                       \n\
+                               __global uint *colour,                    \n\
+                               const uint buffer_width,                 \n\
+                               __global uint *buffer)                   \n\
+{                                                                       \n\
+    uint minid = *y0 * buffer_width + *x0;                              \n\
+    uint maxid = *y1 * buffer_width + *x1;                              \n\
+    uint gid = get_global_id(0);                                        \n\
+    uint overflow = (gid/(*x1-*x0)) * (buffer_width-*x1+*x0);           \n\
+    uint idx = minid + gid + overflow;                                  \n\
+    uint stride = get_global_size(0);                                   \n\
+                                                                        \n\
+    while (idx<maxid){                                                  \n\
+        buffer[idx] = *colour;                                          \n\
+        idx = idx + stride + (stride/(*x1-*x0))*(buffer_width-*x1+*x0); \n\
+    }                                                                   \n\
 }";
 
 wga_err init_opencl();

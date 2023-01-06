@@ -75,6 +75,10 @@ inline static void render_background(){
 #endif
 }
 
+void app_cleanup(){
+    if (drawer) delete drawer;
+}
+
 void render_init(){
     wga_err err;
     drawer = new Drawer(err);

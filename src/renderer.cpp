@@ -24,7 +24,15 @@ Drawer::~Drawer(){
 #ifdef USING_OPENCL
     clFlush(queue);
     clReleaseCommandQueue(queue);
+    clReleaseEvent(mutex_event);
+
     clReleaseMemObject(src_buf);
+    clReleaseMemObject(x0_buf);
+    clReleaseMemObject(y0_buf);
+    clReleaseMemObject(x1_buf);
+    clReleaseMemObject(y1_buf);
+    clReleaseMemObject(col_buf);
+
     clReleaseKernel(draw_rect_kernel);
     clReleaseDevice(device);
     clReleaseContext(context);
@@ -96,18 +104,21 @@ void Drawer::draw_crect(float x, float y, float width, float height, uint32_t co
 #endif
 
 wga_err Drawer::cl_draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour){
-    // Set kernel args
     cl_int err = 0;
-    err += clSetKernelArg(draw_rect_kernel, 0, sizeof(cl_uint), (cl_uint*) &x0);
-    err += clSetKernelArg(draw_rect_kernel, 1, sizeof(cl_uint), (cl_uint*) &y0);
-    err += clSetKernelArg(draw_rect_kernel, 2, sizeof(cl_uint), (cl_uint*) &x1);
-    err += clSetKernelArg(draw_rect_kernel, 3, sizeof(cl_uint), (cl_uint*) &y1);
-    err += clSetKernelArg(draw_rect_kernel, 4, sizeof(cl_uint), (cl_uint*) &colour);
-    err += clSetKernelArg(draw_rect_kernel, 5, sizeof(cl_uint), (cl_uint*) &render_state.width);
-    err += clSetKernelArg(draw_rect_kernel, 6, sizeof(void*), (void*) &src_buf);
-    OCLCHECKERR("Failed to set kernel arguments.",err);
+    cout << "T111" << endl;
+    fflush(stdout);
+    // Pass args
+    clEnqueueWriteBuffer(queue, x0_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&x0, 1, &mutex_event, NULL);
+    clEnqueueWriteBuffer(queue, y0_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&y0, 1, &mutex_event, NULL);
+    clEnqueueWriteBuffer(queue, x1_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&x1, 1, &mutex_event, NULL);
+    clEnqueueWriteBuffer(queue, y1_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&y1, 1, &mutex_event, NULL);
+    clEnqueueWriteBuffer(queue, col_buf, CL_FALSE, 0, sizeof(cl_uint), (void*)&colour, 1, &mutex_event, NULL);
+    clFinish(queue);
+    cout << "T222" << endl;
+    fflush(stdout);
     // Enqueue Kernel
-    OCLCHECK(clEnqueueNDRangeKernel(queue, draw_rect_kernel, 1, NULL, &global_work_size, &local_work_size, 0, NULL, NULL));
+    clWaitForEvents(1,&mutex_event); //safety mutex
+    OCLCHECK(clEnqueueNDRangeKernel(queue, draw_rect_kernel, 1, NULL, &global_work_size, &local_work_size, 0, NULL,&mutex_event));
     
     return WGA_SUCCESS;
 }
@@ -145,20 +156,16 @@ wga_err Drawer::init_opencl(){
 
     // Compute work sizes (going to need to be recomputed on resize events)
     src_size = (cl_uint)render_state.width*render_state.height;
-    std::cout << "T11 " << src_size << std::endl;
-    fflush(stdout);
-    cl_uint compute_units;
 
+    cl_uint compute_units;
     OCLCHECK(clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &compute_units, NULL));
     
     cl_uint ws = WORK_SIZE;
     global_work_size = compute_units * 7 * ws; // 7 wavefronts per SIMD
-    std::cout << "T12 " << global_work_size << std::endl;
-    fflush(stdout);
     // while(src_size % global_work_size != 0)
     //     global_work_size += ws;
     local_work_size = ws;
-    printf("GWS: %u, LWS: %u, NSI: %u\n",global_work_size,local_work_size,src_size);
+    cout << "GWS: " << global_work_size << ", LWS: "<< local_work_size <<", NSI: " << src_size << endl;
 
     // Create context
     context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
@@ -181,11 +188,9 @@ wga_err Drawer::init_opencl(){
       char buf[0x10000];
 
       clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0x10000, buf, NULL);
-      printf("\n%s\n", buf);
+      cout << buf << endl;
       OCLCHECKERR("Failed to build program.",err);
     }
-    std::cout << "T13 " << std::endl;
-    fflush(stdout);
 
     // Create kernels
     draw_rect_kernel = clCreateKernel(program, "draw_rect_kernel", &err);
@@ -195,6 +200,26 @@ wga_err Drawer::init_opencl(){
     src_ptr = (cl_uint*)render_state.memory;
     src_buf = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, src_size * sizeof(cl_uint), src_ptr, &err);
     OCLCHECKERR("Failed to create source buffer.",err);
+    x0_buf = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(cl_uint), NULL, &err);
+    OCLCHECKERR("Failed to create source buffer.",err);
+    y0_buf = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(cl_uint), NULL, &err);
+    OCLCHECKERR("Failed to create source buffer.",err);
+    x1_buf = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(cl_uint), NULL, &err);
+    OCLCHECKERR("Failed to create source buffer.",err);
+    y1_buf = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(cl_uint), NULL, &err);
+    OCLCHECKERR("Failed to create source buffer.",err);
+    col_buf = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(cl_uint), NULL, &err);
+    OCLCHECKERR("Failed to create source buffer.",err);
+
+    // Set kernel args
+    err |= clSetKernelArg(draw_rect_kernel, 0, sizeof(cl_uint*), (cl_uint*) &x0_buf);
+    err |= clSetKernelArg(draw_rect_kernel, 1, sizeof(cl_uint*), (cl_uint*) &y0_buf);
+    err |= clSetKernelArg(draw_rect_kernel, 2, sizeof(cl_uint*), (cl_uint*) &x1_buf);
+    err |= clSetKernelArg(draw_rect_kernel, 3, sizeof(cl_uint*), (cl_uint*) &y1_buf);
+    err |= clSetKernelArg(draw_rect_kernel, 4, sizeof(cl_uint*), (cl_uint*) &col_buf);
+    err |= clSetKernelArg(draw_rect_kernel, 5, sizeof(cl_uint*), (cl_uint*) &render_state.width);
+    err |= clSetKernelArg(draw_rect_kernel, 6, sizeof(void*), (void*) &src_buf);
+    OCLCHECKERR("Failed to set kernel arguments, err_no may not be accurate.",err);
 
     return WGA_SUCCESS;
 }

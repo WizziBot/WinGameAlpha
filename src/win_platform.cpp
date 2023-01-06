@@ -24,6 +24,7 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
     switch(Msg){
         case WM_CLOSE:
         case WM_DESTROY: {
+            app_cleanup();
             running = false;
         } break;
 
