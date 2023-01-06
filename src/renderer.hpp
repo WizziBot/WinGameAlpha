@@ -12,6 +12,7 @@
 #define OCL_ERROR_CHECKING
 #define CL_TARGET_OPENCL_VERSION 300
 #include <CL/cl.h>
+#define RECT_DATA_BUF_SIZE 5
 #endif
 
 namespace WinGameAlpha{
@@ -54,44 +55,34 @@ cl_program program;
 cl_kernel draw_rect_kernel;
 
 cl_mem src_buf;
-cl_mem x0_buf;
-cl_mem y0_buf;
-cl_mem x1_buf;
-cl_mem y1_buf;
-cl_mem col_buf;
+cl_mem rect_data_buf;
 
+// Pointer to render state memory
 cl_uint *src_ptr;
-
-cl_event mutex_event = NULL;
-cl_event param_evts[5];
+// Buffer Map into parameter list of kernel
+cl_uint *rect_data;
 
 const char *kernel_source = \
-"__kernel void draw_rect_kernel(__global uint *x0,                      \n\
-                               __global uint *y0,                       \n\
-                               __global uint *x1,                       \n\
-                               __global uint *y1,                       \n\
-                               __global uint *colour,                   \n\
-                               const uint buffer_width,                 \n\
-                               __global uint *buffer)                   \n\
-{                                                                       \n\
-    uint minid = *y0 * buffer_width + *x0;                              \n\
-    uint maxid = *y1 * buffer_width + *x1;                              \n\
-    uint gid = get_global_id(0);                                        \n\
-    uint rect_width = *x1-*x0;                                       \n\
-    uint wrap_step = (buffer_width-*x1+*x0);                            \n\
-    uint overflow = (gid/(rect_width)) * wrap_step;                     \n\
-    uint idx = minid + gid + overflow;                                  \n\
-    uint stride = get_global_size(0);                                   \n\
-    int i = 0;                                                          \n\
-    while (idx<maxid){                                                  \n\
-        buffer[idx] = *colour;                                          \n\
-        idx = minid + gid + stride*i + ((gid+stride*i)/(rect_width)) * wrap_step; \n\
-        i++;                                                            \n\
-    }                                                                   \n\
+"__kernel void draw_rect_kernel(const __global uint *rect_data,                              \n\
+                               __global uint *buffer)                                        \n\
+{                                                                                            \n\
+    uint gid = get_global_id(0);                                                             \n\
+    uint overflow = (gid/(rect_data[2])) * rect_data[3];                                     \n\
+    uint idx = rect_data[0] + gid + overflow;                                                \n\
+    uint stride = get_global_size(0);                                                        \n\
+                                                                                             \n\
+    int i = 0;                                                                               \n\
+    while (idx<rect_data[1]){                                                                \n\
+        buffer[idx] = rect_data[4];                                                          \n\
+        idx = rect_data[0] + gid + stride*i + ((gid+stride*i)/(rect_data[2])) * rect_data[3];\n\
+        i++;                                                                                 \n\
+    }                                                                                        \n\
 }";
 
+/* Initialize OpenCL API*/
 wga_err init_opencl();
 
+/* Queue draw on OpenCL device*/
 wga_err cl_draw_rect_px(const int x0, const int y0, const int x1, const int y1,const uint32_t colour);
 
 #endif
