@@ -45,7 +45,7 @@ struct Ball_Data{
 // Globals
 extern bool running;
 
-Drawer *drawer;
+std::unique_ptr<Drawer> drawer;
 
 static Player_Data player1;
 static Player_Data player2;
@@ -71,18 +71,19 @@ inline static void render_background(){
 }
 
 void app_cleanup(){
-    if (drawer) delete drawer;
+    drawer.reset();
 }
 
 void render_init(){
     wga_err err;
-    drawer = new Drawer(err);
+    Drawer *drawer_raw = new Drawer(err);
     if (err != WGA_SUCCESS){
-        if(drawer) delete drawer;
+        if(drawer_raw) drawer.reset();
 #ifdef USING_OPENCL
         WGACHECKERRNO("Failed to instantiate drawer.",err);
 #endif
     }
+    drawer = std::unique_ptr<Drawer>(drawer_raw);
 #ifdef DEBUG_INFO
     {
         LARGE_INTEGER perf;

@@ -3,7 +3,7 @@
 #include "renderer.hpp"
 #include "common.hpp"
 #include "utils.hpp"
-#include <iostream>
+#include <memory>
 
 namespace WinGameAlpha{
 
