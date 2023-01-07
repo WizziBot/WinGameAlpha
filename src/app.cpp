@@ -8,7 +8,7 @@
 #define P_ACCELERATION 500
 #define B_Y_SPEED 25.f
 #define B_INIT_SPEED 50.f
-#define FRICTION .05f
+#define DRAG .05f
 
 // Size defines
 #define ARENA_L -85.f
@@ -101,14 +101,13 @@ void render_update(){
 }
 
 #define APPLY_KINEMATICS_TICK(s,v,a,dt) s = s + v * dt + a*dt*dt*.5f; \
-                                        v = v + a * dt - FRICTION*v;
+                                        v = v + a * dt - DRAG*v;
 
 void render_tick(Input& input, float dt){
 
 #ifdef DEBUG_INFO
     std::cout << "FPS: " << 1/dt << std::endl;
     std::cout << "TDO: " << time_diff_other << "\n" << "TDR: " << time_diff_render << std::endl;
-
     QueryPerformanceCounter(&time1);
 #endif
 
