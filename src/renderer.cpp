@@ -169,16 +169,14 @@ wga_err Drawer::init_opencl(){
 
     // Compute work sizes (going to need to be recomputed on resize events)
     src_size = (cl_uint)render_state.width*render_state.height;
-
+    
+    // Compute work wize
     cl_uint compute_units;
-    OCLCHECK(clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &compute_units, NULL));
+    OCLCHECK(clGetDeviceInfo(device, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &compute_units, NULL)); 
     
     cl_uint ws = 64;
     global_work_size = compute_units * 7 * ws; // 7 wavefronts per SIMD
-    // while(src_size % global_work_size != 0)
-    //     global_work_size += ws;
     local_work_size = ws;
-    cout << "GWS: " << global_work_size << ", LWS: "<< local_work_size <<", NSI: " << src_size << endl;
 
     // Create context
     context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);

@@ -19,11 +19,6 @@ namespace WinGameAlpha{
 
 extern Render_State render_state;
 
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::string;
-
 class Drawer {
 public:
 
@@ -66,15 +61,21 @@ const char *kernel_source = \
 "__kernel void draw_rect_kernel(const __global uint *rect_data,\n\
                                __global uint *buffer)\n\
 {\n\
+    uint rect_data_local[5];\n\
+    rect_data_local[0] = rect_data[0];\n\
+    rect_data_local[1] = rect_data[1];\n\
+    rect_data_local[2] = rect_data[2];\n\
+    rect_data_local[3] = rect_data[3];\n\
+    rect_data_local[4] = rect_data[4];\n\
     uint gid = get_global_id(0);\n\
-    uint overflow = (gid/rect_data[2]) * rect_data[3];\n\
-    uint idx = rect_data[0] + gid + overflow;\n\
+    uint overflow = (gid/rect_data_local[2]) * rect_data_local[3];\n\
+    uint idx = rect_data_local[0] + gid + overflow;\n\
     uint stride = get_global_size(0);\n\
 \n\
     int i = 0;\n\
-    while (idx<rect_data[1]){\n\
-        buffer[idx] = rect_data[4];\n\
-        idx = rect_data[0] + gid + stride*i + ((gid+stride*i)/(rect_data[2])) * rect_data[3];\n\
+    while (idx<rect_data_local[1]){\n\
+        buffer[idx] = rect_data_local[4];\n\
+        idx = rect_data_local[0] + gid + stride*i + ((gid+stride*i)/(rect_data_local[2])) * rect_data_local[3];\n\
         i++;\n\
     }\n\
 }";

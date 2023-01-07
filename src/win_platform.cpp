@@ -6,11 +6,10 @@
 #include "common.hpp"
 
 /* DEFINES */
-#define W_WIDTH APP_WIDTH
-#define W_HEIGHT APP_HEIGHT
+#define W_WIDTH 800*3
+#define W_HEIGHT 450*3
+#define TICK_DELAY 2
 #define C_ONMSG "WinGameAlpha: Started"
-// #define DEBUG_MODE
-
 
 namespace WinGameAlpha {
 
