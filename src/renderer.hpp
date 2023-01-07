@@ -5,7 +5,8 @@
 #include <stdint.h>
 #include <math.h>
 #include <iostream>
-#include <string>
+#include <vector>
+using std::vector;
 
 #ifdef USING_OPENCL
 // #define CL_HPP_ENABLE_EXCEPTIONS
@@ -19,11 +20,25 @@ namespace WinGameAlpha{
 
 extern Render_State render_state;
 
+class Render_Object {
+public:
+
+Render_Object();
+~Render_Object();
+
+virtual void draw();
+
+protected:
+
+};
+
 class Drawer {
 public:
 
 Drawer(wga_err& drawer_err);
 ~Drawer();
+
+wga_err draw_objects();
 
 /* Clear window to one colour */
 void clear_screen(uint32_t colour);
@@ -40,6 +55,8 @@ void cl_draw_finish();
 wga_err cl_resize();
 
 private:
+vector<vector<Render_Object*> > render_layers;
+
 #ifdef USING_OPENCL
 cl_uint src_size;
 size_t global_work_size;

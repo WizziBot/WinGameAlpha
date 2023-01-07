@@ -2,8 +2,11 @@
 #include <windows.h>
 #include <iostream>
 
-// Using OpenCL macro
+// Enable OpenCL
 // #define USING_OPENCL
+
+// Enable debug information
+#define DEBUG_INFO
 
 using std::cout;
 using std::cerr;

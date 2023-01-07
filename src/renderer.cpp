@@ -35,6 +35,19 @@ Drawer::~Drawer(){
 #endif
 }
 
+wga_err Drawer::draw_objects(){
+    return WGA_SUCCESS; //remove this
+    vector<vector<Render_Object*> >::iterator layer;
+    for (layer = render_layers.begin(); layer != render_layers.end(); layer++){
+        // Posible optimisation for OpenCL
+        vector<Render_Object*>::iterator render_object;
+        for (render_object = layer->begin(); render_object != layer->end(); render_object++){
+            (*render_object)->draw();
+        }
+
+    }
+}
+
 void Drawer::clear_screen(uint32_t colour){
     if (resizing || !running) return;
     #ifdef USING_OPENCL
@@ -93,6 +106,17 @@ void Drawer::cl_draw_finish(){
 #ifdef USING_OPENCL
     clFinish(queue);
 #endif
+}
+
+Render_Object::Render_Object(){
+
+}
+Render_Object::~Render_Object(){
+
+}
+
+void Render_Object::draw(){
+    
 }
 
 #ifdef USING_OPENCL // Using OpenCL to render

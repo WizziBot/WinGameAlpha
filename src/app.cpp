@@ -1,8 +1,5 @@
 #include "app.hpp"
 
-// Enable debug information
-#define DEBUG_INFO
-
 //Physics
 #define P_SPEED 50.f
 #define P_ACCELERATION 500
