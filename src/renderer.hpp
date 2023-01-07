@@ -20,6 +20,14 @@ namespace WinGameAlpha{
 
 extern Render_State render_state;
 
+struct render_rect_properties{
+    float x;
+    float y;
+    float width;
+    float height;
+    uint32_t colour;
+};
+
 class Render_Object {
 public:
 
@@ -30,25 +38,44 @@ virtual void draw();
 
 protected:
 
+/* A wrapper for the drawer object's register_render_object
+@param drawer the drawer object instantiated in the application
+@param rect_props an array of render_rect_properties.
+@param num_rect_props the length of rect_props.
+*/
+static wga_err register_render_object(Drawer& drawer, render_rect_properties& rect_props, int num_rect_props);
+    
 };
 
 class Drawer {
+friend class Render_Object;
 public:
 
 Drawer(wga_err& drawer_err);
 ~Drawer();
 
+/* Draw all registered render objects*/
 wga_err draw_objects();
+
+/* Registers a render object with the drawer which gets rendered every call to draw()
+@param rect_props an array of render_rect_properties.
+@param num_rect_props the length of rect_props.
+*/
+wga_err register_render_object(render_rect_properties& rect_props,
+                               int num_rect_props);
 
 /* Clear window to one colour */
 void clear_screen(uint32_t colour);
 /* Draw rectangle absolute (pixel) coordinates*/
 void draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour);
-/* Draw rectangle with normalised (to 100) coordinates with respect to the window height
+/* Draw rectangle with normalised (to 100) coordinates with respect to the window height.
+   0,0 is the centre of the window.
+   @param x the x offset @param y the y offset 
+   @param width the width of the rectangle @param height the height of the rectangle 
+   @param colour a 24bit rgb colour value with 8bit padding
 */
 void draw_rect(float x, float y, float width, float height, uint32_t colour);
-/* Centered version of draw_rect where 0,0 is the middle of the window */
-void draw_crect(float x, float y, float width, float height, uint32_t colour);
+
 /* Wrapper for clFinish(queue) */
 void cl_draw_finish();
 /* Resize event */

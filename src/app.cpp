@@ -58,10 +58,10 @@ float performance_frequency;
 // Functions
 
 inline static void render_background(){
-    drawer->draw_crect(0,0,ARENA_R*2,ARENA_U*2,ARENA_COLOUR);
-    drawer->draw_crect(ball.m_posX,ball.m_posY,B_DIAMETER,B_DIAMETER,B_COLOUR);
-    drawer->draw_crect(-P_X_DISPLACEMENT,player1.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
-    drawer->draw_crect(P_X_DISPLACEMENT,player2.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
+    drawer->draw_rect(0,0,ARENA_R*2,ARENA_U*2,ARENA_COLOUR);
+    drawer->draw_rect(ball.m_posX,ball.m_posY,B_DIAMETER,B_DIAMETER,B_COLOUR);
+    drawer->draw_rect(-P_X_DISPLACEMENT,player1.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
+    drawer->draw_rect(P_X_DISPLACEMENT,player2.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
 #ifdef USING_OPENCL
     drawer->cl_draw_finish();
 #endif
@@ -73,6 +73,8 @@ void app_cleanup(){
 
 void render_init(){
     wga_err err;
+
+    // Init drawer
     Drawer *drawer_raw = new Drawer(err);
     if (err != WGA_SUCCESS){
         if(drawer_raw) drawer.reset();
@@ -81,6 +83,10 @@ void render_init(){
 #endif
     }
     drawer = std::unique_ptr<Drawer>(drawer_raw);
+
+    // Register objects
+
+
 #ifdef DEBUG_INFO
     {
         LARGE_INTEGER perf;

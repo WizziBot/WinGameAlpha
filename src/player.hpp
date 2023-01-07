@@ -10,7 +10,12 @@ class Player : public Kinematic_Object, public Render_Object {
 friend class Drawer;
 public:
 
-Player();
+/* Player - kinematic object and render object
+@param drawer drawer object instantiated on application side
+*/
+Player(Drawer& drawer) : Kinematic_Object() {
+    
+};
 ~Player();
 
 void tick(float dt) override{

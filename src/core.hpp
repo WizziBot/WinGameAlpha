@@ -3,7 +3,7 @@
 #include <iostream>
 
 // Enable OpenCL
-// #define USING_OPENCL
+#define USING_OPENCL
 
 // Enable debug information
 #define DEBUG_INFO
