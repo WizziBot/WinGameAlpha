@@ -1,7 +1,7 @@
 #include "core.hpp"
 
 namespace WinGameAlpha{
-    
+
 class Ball {
 public:
 

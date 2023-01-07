@@ -1,21 +1,19 @@
 #include "core.hpp"
+#include "physics.hpp"
 
 namespace WinGameAlpha{
     
-class Player {
+class Player : public Kinematic_Object {
 public:
 
 Player();
 ~Player();
 
-/* Kinematics tick */
-void apply_physics(float dt);
+// also extend to some render object base class
+// make friend of drawer?
 
 private:
-    float m_posY = 0;
-    float m_dy = 0;
-    float m_ddy = 0;
-
+    void apply_physics(float dt);
     void process_collisions();
 };
 
