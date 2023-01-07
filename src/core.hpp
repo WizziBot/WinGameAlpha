@@ -1,5 +1,6 @@
 #pragma once
 #include <windows.h>
+#include <iostream>
 
 // Using OpenCL macro
 // #define USING_OPENCL
@@ -7,7 +8,6 @@
 using std::cout;
 using std::cerr;
 using std::endl;
-using std::string;
 
 namespace WinGameAlpha{
 
