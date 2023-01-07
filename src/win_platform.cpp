@@ -6,8 +6,8 @@
 #include "common.hpp"
 
 /* DEFINES */
-#define W_WIDTH 800*3
-#define W_HEIGHT 450*3
+#define W_WIDTH 800*2
+#define W_HEIGHT 450*2
 #define TICK_DELAY 2
 #define C_ONMSG "WinGameAlpha: Started"
 
@@ -24,7 +24,6 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
     switch(Msg){
         case WM_CLOSE:
         case WM_DESTROY: {
-            app_cleanup();
             running = false;
         } break;
         case WM_SIZING: {
@@ -158,6 +157,7 @@ case vk:{ \
         delta_time = (float)(frame_end_time.QuadPart - frame_begin_time.QuadPart)/performance_frequency;
         frame_begin_time = frame_end_time;
     }
+    app_cleanup();
 
     return 0;
 }
