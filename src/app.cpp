@@ -1,4 +1,7 @@
 #include "app.hpp"
+#include "physics.hpp"
+#include "player.hpp"
+#include "ball.hpp"
 
 //Physics
 #define P_SPEED 50.f
@@ -27,26 +30,31 @@ namespace WinGameAlpha {
 
 // Structs 
 
-struct Player_Data{
-    float m_posY = 0;
-    float m_dy = 0;
-    float m_ddy = 0;
-};
-struct Ball_Data{
-    float m_posY = 0;
-    float m_posX = 0;
-    float m_dy = 0;
-    float m_dx = B_INIT_SPEED;
-};
+// struct Player_Data{
+//     float m_posY = 0;
+//     float m_dy = 0;
+//     float m_ddy = 0;
+// };
+// struct Ball_Data{
+//     float m_posY = 0;
+//     float m_posX = 0;
+//     float m_dy = 0;
+//     float m_dx = B_INIT_SPEED;
+// };
 
 // Globals
 extern bool running;
 
-std::unique_ptr<Drawer> drawer;
+shared_ptr<Drawer> drawer;
+shared_ptr<Entity_Physics> physics;
+shared_ptr<Player> player1;
+shared_ptr<Player> player2;
+shared_ptr<Ball> ball;
+vector<Collider_Boundary> bounds;
 
-static Player_Data player1;
-static Player_Data player2;
-static Ball_Data ball;
+// static Player_Data player1;
+// static Player_Data player2;
+// static Ball_Data ball;
 
 #ifdef DEBUG_INFO
 LARGE_INTEGER time1, time2, end_time;
@@ -57,15 +65,15 @@ float performance_frequency;
 
 // Functions
 
-inline static void render_background(){
-    drawer->draw_rect(0,0,ARENA_R*2,ARENA_U*2,ARENA_COLOUR);
-    drawer->draw_rect(ball.m_posX,ball.m_posY,B_DIAMETER,B_DIAMETER,B_COLOUR);
-    drawer->draw_rect(-P_X_DISPLACEMENT,player1.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
-    drawer->draw_rect(P_X_DISPLACEMENT,player2.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
-#ifdef USING_OPENCL
-    drawer->cl_draw_finish();
-#endif
-}
+// inline static void render_background(){
+//     drawer->draw_rect(0,0,ARENA_R*2,ARENA_U*2,ARENA_COLOUR);
+//     drawer->draw_rect(ball.m_posX,ball.m_posY,B_DIAMETER,B_DIAMETER,B_COLOUR);
+//     drawer->draw_rect(-P_X_DISPLACEMENT,player1.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
+//     drawer->draw_rect(P_X_DISPLACEMENT,player2.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
+// #ifdef USING_OPENCL
+//     drawer->cl_draw_finish();
+// #endif
+// }
 
 void app_cleanup(){
     drawer.reset();
@@ -75,16 +83,50 @@ void render_init(){
     wga_err err;
 
     // Init drawer
-    Drawer *drawer_raw = new Drawer(err);
+    drawer = make_shared<Drawer>(err);
     if (err != WGA_SUCCESS){
-        if(drawer_raw) drawer.reset();
+        drawer.reset();
 #ifdef USING_OPENCL
         WGACHECKERRNO("Failed to instantiate drawer.",err);
 #endif
     }
-    drawer = std::unique_ptr<Drawer>(drawer_raw);
 
     // Register objects
+    physics = make_shared<Entity_Physics>();
+
+    kinematic_initial_properties player1_init = {
+        .posX = -P_X_DISPLACEMENT
+    };
+    kinematic_initial_properties player2_init = {
+        .posX = P_X_DISPLACEMENT
+    };
+    kinematic_initial_properties ball_init = {
+        .dy = B_Y_SPEED,
+        .dx = B_INIT_SPEED
+    };
+    aabb_bounds player_aabb = {
+        .half_width = P_WIDTH/2,
+        .half_height = P_HEIGHT/2
+    };
+    aabb_bounds ball_aabb = {
+        .half_width = B_DIAMETER/2,
+        .half_height = B_DIAMETER/2
+    };
+    aabb_bounds arena_aabb = {
+        .half_width = ARENA_R,
+        .half_height = ARENA_U
+    };
+    // declare background render objects earlier
+    player1 = make_shared<Player>(physics, drawer, &player1_init,0, &player_aabb, 2);
+    player2 = make_shared<Player>(physics, drawer, &player2_init,0, &player_aabb, 2);
+    ball = make_shared<Ball>(physics, drawer, &ball_init, 0, &ball_aabb);
+    Collider_Boundary arena_bound(0, 0, arena_aabb, BOUND_TOP | BOUND_BOTTOM);
+    bounds.push_back(arena_bound);
+    // register the arena bounds
+    vector<Collider_Boundary>::iterator bound;
+    for (bound = bounds.begin(); bound != bounds.end(); bound++){
+        physics->register_collider_boundary(0,bound.base());
+    }
 
 
 #ifdef DEBUG_INFO
@@ -100,8 +142,8 @@ void render_update(){
 #ifdef USING_OPENCL
     WGAERRCHECK(drawer->cl_resize());
 #endif
-    drawer->clear_screen(BACKGROUND_COLOUR);
-    render_background();
+    // drawer->clear_screen(BACKGROUND_COLOUR);
+    // render_background();
 }
 
 #define APPLY_KINEMATICS_TICK(s,v,a,dt) s = s + v * dt + a*dt*dt*.5f; \
@@ -122,6 +164,22 @@ void render_tick(Input& input, float dt){
     if (btn_down(BUTTON_DOWN)) player1.m_ddy = -P_ACCELERATION;
     if (btn_down(BUTTON_KUP)) player2.m_ddy = P_ACCELERATION;
     if (btn_down(BUTTON_KDOWN)) player2.m_ddy = -P_ACCELERATION;
+
+    physics->physics_tick(dt);
+    
+    #ifdef DEBUG_INFO
+    QueryPerformanceCounter(&time2);
+    if (!running) return;
+#endif
+    drawer->draw_objects();
+#ifdef DEBUG_INFO
+    QueryPerformanceCounter(&end_time);
+    time_diff_other = (float)(time2.QuadPart - time1.QuadPart)/performance_frequency;
+    time_diff_render = (float)(end_time.QuadPart - time2.QuadPart)/performance_frequency;
+#endif
+
+    // Detete everything after this
+    return;
 
     // Apply kinematics
     APPLY_KINEMATICS_TICK(player1.m_posY,player1.m_dy,player1.m_ddy,dt);
@@ -170,17 +228,7 @@ void render_tick(Input& input, float dt){
     }
 
     // Render bkg
-#ifdef DEBUG_INFO
-    QueryPerformanceCounter(&time2);
-    if (!running) return;
-#endif
-    drawer->clear_screen(BACKGROUND_COLOUR);
-    render_background();
-#ifdef DEBUG_INFO
-    QueryPerformanceCounter(&end_time);
-    time_diff_other = (float)(time2.QuadPart - time1.QuadPart)/performance_frequency;
-    time_diff_render = (float)(end_time.QuadPart - time2.QuadPart)/performance_frequency;
-#endif
+
 }
 
 }

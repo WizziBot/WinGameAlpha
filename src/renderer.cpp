@@ -35,14 +35,21 @@ Drawer::~Drawer(){
 #endif
 }
 
-wga_err Drawer::draw_objects(){
-    return WGA_SUCCESS; //remove this
+void Drawer::register_render_object(Render_Object* render_obj, int render_layer){
+    render_layers
+}
+
+void Drawer::draw_objects(){
     vector<vector<Render_Object*> >::iterator layer;
     for (layer = render_layers.begin(); layer != render_layers.end(); layer++){
         // Posible optimisation for OpenCL
         vector<Render_Object*>::iterator render_object;
         for (render_object = layer->begin(); render_object != layer->end(); render_object++){
+
+            // do all rect draw operations here
             (*render_object)->draw();
+
+
         }
 
     }
@@ -99,14 +106,13 @@ void Drawer::cl_draw_finish(){
 #endif
 }
 
-Render_Object::Render_Object(){
-
-}
-Render_Object::~Render_Object(){
-
-}
-
-void Render_Object::draw(){
+Render_Object::Render_Object(shared_ptr<Drawer> drawer, render_rect_properties* rect_props, int num_rect_props, int render_layer){
+    if (render_layer > drawer->getRenderLayersSize()) throw std::invalid_argument("Invalid index for render_layer: Render layers must be contiguous.");
+    m_drawer = drawer;
+    if (rect_props == NULL || num_rect_props == 0) throw std::invalid_argument("There must be at least one rect property");
+    for (int i=num_rect_props;i<num_rect_props;i++){
+        m_rect_props.push_back(rect_props[i]);
+    }
     
 }
 

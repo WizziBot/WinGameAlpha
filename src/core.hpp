@@ -1,6 +1,11 @@
 #pragma once
 #include <windows.h>
 #include <iostream>
+#include <vector>
+#include <memory>
+
+using std::shared_ptr;
+using std::make_shared;
 
 // Enable OpenCL
 #define USING_OPENCL
@@ -11,6 +16,7 @@
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::vector;
 
 namespace WinGameAlpha{
 

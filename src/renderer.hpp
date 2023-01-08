@@ -5,8 +5,7 @@
 #include <stdint.h>
 #include <math.h>
 #include <iostream>
-#include <vector>
-using std::vector;
+
 
 #ifdef USING_OPENCL
 // #define CL_HPP_ENABLE_EXCEPTIONS
@@ -21,8 +20,8 @@ namespace WinGameAlpha{
 extern Render_State render_state;
 
 struct render_rect_properties{
-    float x;
-    float y;
+    float x_offset;
+    float y_offset;
     float width;
     float height;
     uint32_t colour;
@@ -30,20 +29,20 @@ struct render_rect_properties{
 
 class Render_Object {
 public:
+/* Render object which contains rectangles to be rendered on each draw() call if registered
+    @param drawer a pointer to the drawer instance
+    @param rect_props a pointer to an array of rect properties
+    @param num_rect_props the length of the rect_props array
+    @param render_layer the id of the render layer of the object where the render objects within the layer will be rendered together,
+    the render layers must be declared contiguously i.e. layer 0 must exist before layer 1
+*/
+Render_Object(shared_ptr<Drawer> drawer, render_rect_properties* rect_props, int num_rect_props, int render_layer);
 
-Render_Object();
-~Render_Object();
-
-virtual void draw();
+virtual void draw(){};
 
 protected:
-
-/* A wrapper for the drawer object's register_render_object
-@param drawer the drawer object instantiated in the application
-@param rect_props an array of render_rect_properties.
-@param num_rect_props the length of rect_props.
-*/
-static wga_err register_render_object(Drawer& drawer, render_rect_properties& rect_props, int num_rect_props);
+vector<render_rect_properties> m_rect_props;
+shared_ptr<Drawer> m_drawer;
     
 };
 
@@ -55,24 +54,28 @@ Drawer(wga_err& drawer_err);
 ~Drawer();
 
 /* Draw all registered render objects*/
-wga_err draw_objects();
+void draw_objects();
 
 /* Registers a render object with the drawer which gets rendered every call to draw()
-@param rect_props an array of render_rect_properties.
-@param num_rect_props the length of rect_props.
+    @param render_obj a pointer to the render object
+    @param render_layer the id of the render layer of the object where the render objects within the layer will be rendered together,
+    the render layers must be declared contiguously i.e. layer 0 must exist before layer 1
 */
-wga_err register_render_object(render_rect_properties& rect_props,
-                               int num_rect_props);
+void register_render_object(Render_Object* render_obj, int render_layer);
+
+int getRenderLayersSize(){
+    return render_layers.size();
+}
 
 /* Clear window to one colour */
 void clear_screen(uint32_t colour);
 /* Draw rectangle absolute (pixel) coordinates*/
 void draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour);
 /* Draw rectangle with normalised (to 100) coordinates with respect to the window height.
-   0,0 is the centre of the window.
-   @param x the x offset @param y the y offset 
-   @param width the width of the rectangle @param height the height of the rectangle 
-   @param colour a 24bit rgb colour value with 8bit padding
+    0,0 is the centre of the window.
+    @param x the x offset @param y the y offset 
+    @param width the width of the rectangle @param height the height of the rectangle 
+    @param colour a 24bit rgb colour value with 8bit padding
 */
 void draw_rect(float x, float y, float width, float height, uint32_t colour);
 

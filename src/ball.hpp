@@ -11,30 +11,13 @@ class Ball : public Kinematic_Object, public Render_Object {
 friend class Drawer;
 public:
 
-Ball(float posY = 0, float posX = 0, float dy= 0, float dx = B_INIT_SPEED)
-: m_posY(posY), m_posX(posX), m_dy(dy), m_dx(dx){};
-~Ball(){};
+Ball(shared_ptr<Entity_Physics> physics, shared_ptr<Drawer> drawer,kinematic_initial_properties* initial_properties, int collision_group, aabb_bounds* bound_data, render_rect_properties* rect_props, int num_rect_props, int render_layer) 
+: Kinematic_Object(physics,initial_properties,collision_group,bound_data), Render_Object(drawer, rect_props, num_rect_props, render_layer) {};
 
-void tick(float dt) override{
-    this->m_posY = this->m_posY + this->m_dy * dt + this->m_ddy*dt*dt*.5f;
-    this->m_dy = this->m_dy + this->m_ddy * dt - P_DRAG*this->m_dy;
-};
+void onCollision(collider_type other_type, aabb_bounds other_bounds, bound_flags flags) override;
+void tick(const float dt) override;
+void draw() override;
 
-void draw() override{
-
-};
-
-
-/* Kinematics tick */
-void apply_physics(float dt);
-
-private:
-    float m_posY;
-    float m_posX;
-    float m_dy;
-    float m_dx;
-    
-    void process_collisions();
 };
 
 }
