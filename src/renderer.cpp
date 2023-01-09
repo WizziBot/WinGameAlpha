@@ -10,6 +10,9 @@ using std::cerr;
 using std::endl;
 using std::string;
 
+#define RNDERR(msg) {cout << "Renderer Error: " << msg << endl; \
+                    return WGA_FAILURE;}
+
 Drawer::Drawer(wga_err& drawer_err){
     wga_err err;
 #ifdef USING_OPENCL
@@ -37,7 +40,7 @@ Drawer::~Drawer(){
 
 wga_err Drawer::register_render_object(Render_Object* render_obj){
     if (render_obj->m_render_layer > render_layers.size()){
-        return WGA_FAILURE;
+        RNDERR("Render layers must be contiguous: invalid render layer id.");
     } else if (render_obj->m_render_layer == render_layers.size()){
         vector<Render_Object*> render_objs;
         render_objs.push_back(render_obj);
@@ -45,6 +48,7 @@ wga_err Drawer::register_render_object(Render_Object* render_obj){
     } else {
         render_layers.at(render_obj->m_render_layer).push_back(render_obj);
     }
+    return WGA_SUCCESS;
 }
 
 void Drawer::draw_objects(){
@@ -53,11 +57,14 @@ void Drawer::draw_objects(){
         // Posible optimisation for OpenCL
         vector<Render_Object*>::iterator render_object;
         for (render_object = layer->begin(); render_object != layer->end(); render_object++){
-            // check whether is subclass and render for it
-            // do all rect draw operations here
-            (*render_object)->draw(this);
-
-
+            if ((*render_object)->m_is_subclass){
+                (*render_object)->draw(this);
+            } else {
+                vector<render_rect_properties>::iterator rect;
+                for (rect = (*render_object)->m_rect_props.begin(); rect != (*render_object)->m_rect_props.end(); rect++){
+                    draw_rect(rect->x_offset,rect->y_offset,rect->width,rect->height,rect->colour);
+                }
+            }
         }
 
     }
@@ -116,11 +123,11 @@ void Drawer::cl_draw_finish(){
 
 Render_Object::Render_Object(shared_ptr<Drawer> drawer, render_rect_properties* rect_props, int num_rect_props, int render_layer, bool is_subclass)
 : m_render_layer(render_layer), m_is_subclass(is_subclass) {
-    if (rect_props == NULL || num_rect_props == 0) throw std::invalid_argument("There must be at least one rect property");
+    if (rect_props == NULL || num_rect_props == 0) throw std::invalid_argument("Renderer Error: There must be at least one rect property");
     for (int i=num_rect_props;i<num_rect_props;i++){
         m_rect_props.push_back(rect_props[i]);
     }
-    drawer->register_render_object(this);
+    WGAERRCHECK(drawer->register_render_object(this));
 }
 
 #ifdef USING_OPENCL // Using OpenCL to render

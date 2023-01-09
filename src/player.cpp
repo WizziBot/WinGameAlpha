@@ -9,22 +9,19 @@ void Player::tick(const float dt){
 }
 
 void Player::accelerate(acceleration_dir dir_flags, float magnitude){
-    if (dir_flags & ACC_UP){
+    if (dir_flags & ACC_UP && !(restricted_dir & ACC_UP)){
         m_ddy += magnitude;
-    } else if (dir_flags & ACC_DOWN) {
+    } else if (dir_flags & ACC_DOWN && !(restricted_dir & ACC_DOWN)) {
         m_ddy -= magnitude;
-    }
+    } else return;
+    restricted_dir = 0;
 }
 
 void Player::onCollision(const collider_type other_type, void* other_collider_ptr, bound_flags active_flags){
     if (other_type == COLLIDER_BOUNDARY){
-        Collider_Boundary* other_collider = (Collider_Boundary*)other_collider_ptr;
-        const aabb_bounds bounds = m_collider->getBounds();
-        const aabb_bounds other_bounds = other_collider->getBounds();
-        const float y_offset = other_collider->getYoffset();
         m_dy = 0;
-        if (active_flags & BOUND_TOP) m_posY = y_offset + other_bounds.half_height - bounds.half_height;
-        else if (active_flags & BOUND_BOTTOM) m_posY = y_offset - other_bounds.half_height + bounds.half_height;
+        if (active_flags & BOUND_TOP) restricted_dir = ACC_UP;
+        else if (active_flags & BOUND_BOTTOM) restricted_dir = ACC_DOWN;
     }
 }
 

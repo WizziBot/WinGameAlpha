@@ -1,14 +1,16 @@
 #include "app.hpp"
-#include "physics.hpp"
-#include "player.hpp"
-#include "ball.hpp"
 
-//Physics
+// Rendering
+#define ARENA_RENDER_LAYER 0
+#define P_B_RENDER_LAYER 1
+
+// Physics
 #define P_SPEED 50.f
 #define P_ACCELERATION 500
 #define B_Y_SPEED 25.f
 #define B_INIT_SPEED 50.f
 #define DRAG .05f
+#define GAME_COLLISION_GROUP 0
 
 // Size defines
 #define ARENA_L -85.f
@@ -27,20 +29,6 @@
 #define P_COLOUR 0xff0000
 
 namespace WinGameAlpha {
-
-// Structs 
-
-// struct Player_Data{
-//     float m_posY = 0;
-//     float m_dy = 0;
-//     float m_ddy = 0;
-// };
-// struct Ball_Data{
-//     float m_posY = 0;
-//     float m_posX = 0;
-//     float m_dy = 0;
-//     float m_dx = B_INIT_SPEED;
-// };
 
 // Globals
 extern bool running;
@@ -132,14 +120,13 @@ void render_init(){
         .height = B_DIAMETER,
         .colour = B_COLOUR
     };
-    Render_Object arena_robj(drawer, &arena_rect,1,0);
+    Render_Object arena_robj(drawer, &arena_rect,1,ARENA_RENDER_LAYER,false);
     render_objects.push_back(arena_robj);
-    drawer->register_render_object(&arena_robj);
+    WGAERRCHECK(drawer->register_render_object(&arena_robj));
     
-    // declare background render objects earlier
-    player1 = make_shared<Player>(physics, drawer, &player1_init,0, &player_aabb, 2);
-    player2 = make_shared<Player>(physics, drawer, &player2_init,0, &player_aabb, 2);
-    ball = make_shared<Ball>(physics, drawer, &ball_init, 0, &ball_aabb);
+    player1 = make_shared<Player>(physics, drawer, &player1_init, GAME_COLLISION_GROUP, &player_aabb, &player_rect, 1, P_B_RENDER_LAYER);
+    player2 = make_shared<Player>(physics, drawer, &player2_init, GAME_COLLISION_GROUP, &player_aabb, &player_rect, 1, P_B_RENDER_LAYER);
+    ball = make_shared<Ball>(physics, drawer, &ball_init, GAME_COLLISION_GROUP, &ball_aabb, &ball_rect, 1, P_B_RENDER_LAYER);
     Collider_Boundary arena_bound(0, 0, arena_aabb, BOUND_TOP | BOUND_BOTTOM);
     bounds.push_back(arena_bound);
     // register the arena bounds

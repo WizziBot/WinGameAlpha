@@ -4,6 +4,9 @@
 #include "renderer.hpp"
 #include "common.hpp"
 #include "utils.hpp"
+#include "physics.hpp"
+#include "player.hpp"
+#include "ball.hpp"
 
 
 namespace WinGameAlpha{

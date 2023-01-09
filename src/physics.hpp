@@ -15,9 +15,15 @@
 #define BOUND_RIGHT (1<<3)
 #define BOUND_ALL BOUND_TOP | BOUND_BOTTOM | BOUND_LEFT | BOUND_RIGHT
 
+#define ACC_UP (1<<0)
+#define ACC_DOWN (1<<1)
+#define ACC_LEFT (1<<2)
+#define ACC_RIGHT (1<<3)
+
 namespace WinGameAlpha {
 
 typedef uint8_t bound_flags;
+typedef uint8_t acceleration_dir;
 
 enum collider_type{
     OBJECT_COLLIDER,
@@ -39,6 +45,9 @@ struct kinematic_initial_properties{
     float ddx=0;
 };
 
+class Kinematic_Object;
+class Collider_Boundary;
+
 class Collider_Group{
 public:
 vector<Kinematic_Object*> k_objects;
@@ -58,8 +67,9 @@ void physics_tick(const float dt);
 /* Register a kinematic object with a collider
     @param collision_group the collision group 
     @param kobj pointer to kinematic object or subclass
+    @return WGA_SUCCESS on success and WGA_FAILURE on failure
 */
-void register_collider_object(int collision_group, Kinematic_Object* kobj);
+wga_err register_collider_object(int collision_group, Kinematic_Object* kobj);
 /* Register a kinematic object
     @param collision_group the collision group 
     @param kobj pointer to kinematic object or subclass
@@ -68,8 +78,9 @@ void register_kinematic_object(Kinematic_Object* kobj);
 /* Register a collider boundary i.e. an aabb collider which is inverted
     @param collision_group the collision group 
     @param bound pointer to boundary object
+    @return WGA_SUCCESS on success and WGA_FAILURE on failure
 */
-void register_collider_boundary(int collision_group, Collider_Boundary* bound);
+wga_err register_collider_boundary(int collision_group, Collider_Boundary* bound);
 
 /* Returns the size of the collision_groups vector*/
 int getCollisionGoupsSize(){
@@ -144,7 +155,6 @@ public:
     @param bound_data a struct containing aabb bound coordinates, if bound_data is NULL no collider will be set.
 */
 Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_initial_properties* init_prop, int collision_group, aabb_bounds* bound_data);
-Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_initial_properties* init_prop);
 
 ~Kinematic_Object(){
     m_collider.reset();

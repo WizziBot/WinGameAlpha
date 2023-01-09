@@ -27,6 +27,8 @@ struct render_rect_properties{
     uint32_t colour;
 };
 
+class Drawer;
+
 class Render_Object {
 friend class Drawer;
 public:
@@ -72,7 +74,7 @@ void clear_screen(uint32_t colour);
 void draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour);
 /* Draw rectangle with normalised (to 100) coordinates with respect to the window height.
     0,0 is the centre of the window.
-    @param x the x offset @param y the y offset 
+    @param x the x position @param y the y position
     @param width the width of the rectangle @param height the height of the rectangle 
     @param colour a 24bit rgb colour value with 8bit padding
 */

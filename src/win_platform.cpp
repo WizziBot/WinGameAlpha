@@ -1,6 +1,6 @@
 
-#include <iostream>
 #include "core.hpp"
+#include "utils.hpp"
 #include "renderer.hpp"
 #include "app.hpp"
 #include "common.hpp"
@@ -84,6 +84,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     HWND window = CreateWindowA((LPCSTR)window_class.lpszClassName, (LPCSTR)"WinGameAlpha", WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, W_WIDTH, W_HEIGHT, 0, 0, hInstance,0);
     HDC hdc = GetDC(window);
     // Frist time render
+    running = true;
     render_init();
     Input input = {};
 
@@ -97,7 +98,6 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         performance_frequency = (float)perf.QuadPart;
     }
 
-    running = true;
     while (running){
         MSG message;
 

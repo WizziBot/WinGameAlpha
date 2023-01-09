@@ -1,7 +1,12 @@
 #include "core.hpp"
 #include "physics.hpp"
 
+#define PHYERR(msg) {cout << "Physics Error: " << msg << endl; \
+                    return WGA_FAILURE;}
+
 namespace WinGameAlpha{
+
+extern bool running;
 
 Entity_Physics::~Entity_Physics(){
 
@@ -12,8 +17,10 @@ void Entity_Physics::physics_tick(const float dt){
     process_collisions();
 }
 
-void Entity_Physics::register_collider_object(int collision_group, Kinematic_Object* kobj){
-    if (collision_group == collision_groups.size()){
+wga_err Entity_Physics::register_collider_object(int collision_group, Kinematic_Object* kobj){
+    if (collision_group > collision_groups.size()){
+        PHYERR("Invalid index for collision_group: Collision groups must be contiguous.")
+    } else if (collision_group == collision_groups.size()){
         Collider_Group new_group;
         vector<Kinematic_Object*> k_objects;
         vector<Collider_Boundary*> bounds;
@@ -24,10 +31,13 @@ void Entity_Physics::register_collider_object(int collision_group, Kinematic_Obj
     } else{
         collision_groups.at(collision_group).k_objects.push_back(kobj);
     }
+    return WGA_SUCCESS;
 }
 
-void Entity_Physics::register_collider_boundary(int collision_group, Collider_Boundary* bound){
-    if (collision_group == collision_groups.size()){
+wga_err Entity_Physics::register_collider_boundary(int collision_group, Collider_Boundary* bound){
+    if (collision_group > collision_groups.size()){
+        PHYERR("Invalid index for collision_group: Collision groups must be contiguous.")
+    } else if (collision_group == collision_groups.size()){
         Collider_Group new_group;
         vector<Kinematic_Object*> k_objects;
         vector<Collider_Boundary*> bounds;
@@ -38,6 +48,7 @@ void Entity_Physics::register_collider_boundary(int collision_group, Collider_Bo
     } else{
         collision_groups.at(collision_group).bounds.push_back(bound);
     }
+    return WGA_SUCCESS;
 }
 
 void Entity_Physics::register_kinematic_object(Kinematic_Object* kobj){
@@ -76,24 +87,23 @@ void Entity_Physics::process_collisions(){
                 kobj_otherX = (*kobj_other)->m_posX;
                 kobj_otherY = (*kobj_other)->m_posY;
                 collider2 = (*(*kobj_other)->getCollider()).m_bounds;
-                // check the absolute differences in x and y coords compared the the sum of the distances to the edge from the centre
                 if (abs(kobjX-kobj_otherX) < collider2.half_width+collider1.half_width && kobjY+collider1.half_height > kobj_otherY-collider2.half_height) out_flag = BOUND_TOP;
-                if (abs(kobjX-kobj_otherX) < collider2.half_width+collider1.half_width && kobjY-collider1.half_height < kobj_otherY+collider2.half_height) out_flag = BOUND_BOTTOM;
-                if (abs(kobjY-kobj_otherY) < collider2.half_height+collider1.half_height && kobjX+collider1.half_width > kobj_otherY-collider2.half_width) out_flag = BOUND_LEFT;
-                if (abs(kobjY-kobj_otherY) < collider2.half_height+collider1.half_height && kobjX-collider1.half_width < kobj_otherY+collider2.half_width) out_flag = BOUND_TOP;
-                (*kobj)->onCollision(OBJECT_COLLIDER,(void*)kobj_other.base(),0);
+                else if (abs(kobjX-kobj_otherX) < collider2.half_width+collider1.half_width && kobjY-collider1.half_height < kobj_otherY+collider2.half_height) out_flag = BOUND_BOTTOM;
+                else if (abs(kobjY-kobj_otherY) < collider2.half_height+collider1.half_height && kobjX+collider1.half_width > kobj_otherY-collider2.half_width) out_flag = BOUND_LEFT;
+                else if (abs(kobjY-kobj_otherY) < collider2.half_height+collider1.half_height && kobjX-collider1.half_width < kobj_otherY+collider2.half_width) out_flag = BOUND_TOP;
+                else continue;
+                (*kobj)->onCollision(OBJECT_COLLIDER,(void*)kobj_other.base(),out_flag);
             }
             for (bound = (*group).bounds.begin(); bound != (*group).bounds.end(); bound++){
                 boundX = (*bound)->m_x_offset;
                 boundY = (*bound)->m_y_offset;
                 collider2 = (*bound)->m_bounds;
                 flags = (*bound)->m_flags;
-                // check if bounding collider has the directional flag and then check whether collision
                 if (flags & BOUND_TOP && kobjY+collider1.half_height > boundY+collider2.half_height) out_flag = BOUND_TOP;
                 else if (flags & BOUND_BOTTOM && kobjY-collider1.half_height < boundY-collider2.half_height) out_flag = BOUND_BOTTOM;
                 else if (flags & BOUND_LEFT && kobjX-collider1.half_width < boundX-collider2.half_width) out_flag = BOUND_LEFT;
                 else if (flags & BOUND_RIGHT && kobjX+collider1.half_width > boundX+collider2.half_width) out_flag = BOUND_RIGHT;
-                else continue; // do not to call oncollsion if none of the conditions met
+                else continue;
                 (*kobj)->onCollision(COLLIDER_BOUNDARY,(void*)bound.base(),out_flag);
             }
         }
@@ -101,8 +111,7 @@ void Entity_Physics::process_collisions(){
 }
 
 Kinematic_Object::Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_initial_properties* init_prop, int collision_group, aabb_bounds* bound_data){
-    if (collision_group > physics->getCollisionGoupsSize()) throw std::invalid_argument("Invalid index for collision_group: Collision groups must be contiguous.");
-    if (physics == NULL || init_prop == NULL || bound_data == NULL)
+    if (physics == NULL) throw std::invalid_argument("Physics Error: Physics pointer must not be null in kinematic object");
     if (init_prop != NULL){
         m_posY = init_prop->posY;
         m_posX = init_prop->posX;
@@ -114,12 +123,9 @@ Kinematic_Object::Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic
     m_collider = make_shared<Collider>(bound_data);
 
     physics->register_kinematic_object(this);
-    physics->register_collider_object(collision_group,this);
-}
-
-Kinematic_Object::Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_initial_properties* init_prop)
-: m_posY(init_prop->posY), m_posX(init_prop->posX), m_dy(init_prop->dy), m_dx(init_prop->dx), m_ddy(init_prop->ddy), m_ddx(init_prop->ddx){
-
+    if (bound_data != NULL){
+        WGAERRCHECK(physics->register_collider_object(collision_group,this));
+    }
 }
 
 }
