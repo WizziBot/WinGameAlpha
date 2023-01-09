@@ -39,7 +39,7 @@ shared_ptr<Player> player1;
 shared_ptr<Player> player2;
 shared_ptr<Ball> ball;
 vector<Collider_Boundary> bounds;
-vector<Render_Object> render_objects;
+vector<shared_ptr<Render_Object>> render_objects;
 
 // static Player_Data player1;
 // static Player_Data player2;
@@ -106,8 +106,8 @@ void render_init(){
         .half_height = ARENA_U
     };
     render_rect_properties arena_rect = {
-        .width = ARENA_R,
-        .height = ARENA_U,
+        .width = ARENA_R*2,
+        .height = ARENA_U*2,
         .colour = ARENA_COLOUR
     };
     render_rect_properties player_rect = {
@@ -120,9 +120,8 @@ void render_init(){
         .height = B_DIAMETER,
         .colour = B_COLOUR
     };
-    Render_Object arena_robj(drawer, &arena_rect,1,ARENA_RENDER_LAYER,false);
+    shared_ptr<Render_Object> arena_robj = make_shared<Render_Object>(drawer, &arena_rect,1,ARENA_RENDER_LAYER,false);
     render_objects.push_back(arena_robj);
-    WGAERRCHECK(drawer->register_render_object(&arena_robj));
     
     player1 = make_shared<Player>(physics, drawer, &player1_init, GAME_COLLISION_GROUP, &player_aabb, &player_rect, 1, P_B_RENDER_LAYER);
     player2 = make_shared<Player>(physics, drawer, &player2_init, GAME_COLLISION_GROUP, &player_aabb, &player_rect, 1, P_B_RENDER_LAYER);
@@ -154,9 +153,6 @@ void render_update(){
     // render_background();
 }
 
-#define APPLY_KINEMATICS_TICK(s,v,a,dt) s = s + v * dt + a*dt*dt*.5f; \
-                                        v = v + a * dt - DRAG*v;
-
 void render_tick(Input& input, float dt){
 
 #ifdef DEBUG_INFO
@@ -166,10 +162,10 @@ void render_tick(Input& input, float dt){
 #endif
 
     // Set acceleration
-    if (btn_down(BUTTON_UP)) player1->accelerate(ACC_UP,P_ACCELERATION);
-    if (btn_down(BUTTON_DOWN)) player2->accelerate(ACC_DOWN,P_ACCELERATION);
-    if (btn_down(BUTTON_KUP)) player2->accelerate(ACC_UP,P_ACCELERATION);
-    if (btn_down(BUTTON_KDOWN)) player2->accelerate(ACC_DOWN,P_ACCELERATION);
+    if (btn_down(BUTTON_UP)) player1->accelerate(ACC_UP);
+    if (btn_down(BUTTON_DOWN)) player1->accelerate(ACC_DOWN);
+    if (btn_down(BUTTON_KUP)) player2->accelerate(ACC_UP);
+    if (btn_down(BUTTON_KDOWN)) player2->accelerate(ACC_DOWN);
 
     physics->physics_tick(dt);
     

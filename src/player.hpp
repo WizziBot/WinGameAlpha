@@ -25,9 +25,9 @@ Player(shared_ptr<Entity_Physics> physics, shared_ptr<Drawer> drawer,kinematic_i
 : Kinematic_Object(physics,initial_properties,collision_group,bound_data), Render_Object(drawer, rect_props, num_rect_props, render_layer, true) {};
 
 void onCollision(const collider_type other_type, void* other_collider_ptr, bound_flags active_flags) override;
-void tick(const float dt) override;
+void tick(float dt) override;
 void draw(Drawer* drawer) override;
-void accelerate(acceleration_dir dir, float magnitude);
+void accelerate(acceleration_dir dir);
 
 private:
 

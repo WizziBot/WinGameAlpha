@@ -6,8 +6,8 @@
 #include "common.hpp"
 
 /* DEFINES */
-#define W_WIDTH 800*2
-#define W_HEIGHT 450*2
+#define W_WIDTH 800
+#define W_HEIGHT 450
 #define TICK_DELAY 2
 #define C_ONMSG "WinGameAlpha: Started"
 
@@ -36,6 +36,7 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
             GetClientRect(hWnd,&rect);
             render_state.width = rect.right - rect.left;
             render_state.height = rect.bottom - rect.top;
+            cout << "ASSIGNING MEMORY" << endl;
 #ifndef USING_OPENCL
             int buffer_size = render_state.width*render_state.height*sizeof(uint32_t); //3 bytes for RGB and 1 byte padding
             if (render_state.memory) VirtualFree(render_state.memory,0,MEM_RELEASE);
@@ -43,6 +44,7 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
             if (render_state.memory == NULL){
                 std::cerr << "Memory assignment failure: Render state" << std::endl;
             }
+            cout << "ASSIGNINED MEMORY" << endl;
 #endif
             render_state.bitmap_info.bmiHeader.biWidth = render_state.width;
             render_state.bitmap_info.bmiHeader.biHeight = render_state.height;
@@ -86,7 +88,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     // Frist time render
     running = true;
     render_init();
-    Input input = {};
+    Input input;
 
     float delta_time = 0.016666f; //Initial 60 fps assumption, immediately reassigned after first tick
     LARGE_INTEGER frame_begin_time, frame_end_time;

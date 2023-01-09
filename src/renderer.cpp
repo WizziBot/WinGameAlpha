@@ -56,7 +56,7 @@ void Drawer::draw_objects(){
     for (layer = render_layers.begin(); layer != render_layers.end(); layer++){
         // Posible optimisation for OpenCL
         vector<Render_Object*>::iterator render_object;
-        for (render_object = layer->begin(); render_object != layer->end(); render_object++){
+        for (render_object = (*layer).begin(); render_object != (*layer).end(); render_object++){
             if ((*render_object)->m_is_subclass){
                 (*render_object)->draw(this);
             } else {
@@ -111,6 +111,8 @@ void Drawer::draw_rect(float x, float y, float width, float height, uint32_t col
     int x1 = floor(render_state.height*(x/100) + render_state.height*(width/200.f) + render_state.width/2.f);
     int y0 = floor(render_state.height*(y/100) - render_state.height*(height/200.f) + render_state.height/2.f);
     int y1 = floor(render_state.height*(y/100) + render_state.height*(height/200.f) + render_state.height/2.f);
+    // cout << "DR x:"<<x<<" y:" <<y <<" w:"<< width << " h:"<<height << endl <<
+    // " x0:"<<x0<<" x1:"<<x1<<" y0"<<y0<<" y1"<<y1<< endl;
 
     draw_rect_px(x0,y0,x1,y1,colour);
 }
@@ -124,7 +126,7 @@ void Drawer::cl_draw_finish(){
 Render_Object::Render_Object(shared_ptr<Drawer> drawer, render_rect_properties* rect_props, int num_rect_props, int render_layer, bool is_subclass)
 : m_render_layer(render_layer), m_is_subclass(is_subclass) {
     if (rect_props == NULL || num_rect_props == 0) throw std::invalid_argument("Renderer Error: There must be at least one rect property");
-    for (int i=num_rect_props;i<num_rect_props;i++){
+    for (int i=0;i<num_rect_props;i++){
         m_rect_props.push_back(rect_props[i]);
     }
     WGAERRCHECK(drawer->register_render_object(this));

@@ -163,7 +163,7 @@ Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_initial_propertie
 /* Called every dt tick to process kinematic movement 
     @param dt delta time per frame
 */
-virtual void tick(const float dt){};
+virtual void tick(float dt){};
 
 /* Called when a collision is detected 
     @param other_type the type of collider the object has collided with
