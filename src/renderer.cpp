@@ -35,8 +35,16 @@ Drawer::~Drawer(){
 #endif
 }
 
-void Drawer::register_render_object(Render_Object* render_obj, int render_layer){
-    render_layers
+wga_err Drawer::register_render_object(Render_Object* render_obj){
+    if (render_obj->m_render_layer > render_layers.size()){
+        return WGA_FAILURE;
+    } else if (render_obj->m_render_layer == render_layers.size()){
+        vector<Render_Object*> render_objs;
+        render_objs.push_back(render_obj);
+        render_layers.push_back(render_objs);
+    } else {
+        render_layers.at(render_obj->m_render_layer).push_back(render_obj);
+    }
 }
 
 void Drawer::draw_objects(){
@@ -45,9 +53,9 @@ void Drawer::draw_objects(){
         // Posible optimisation for OpenCL
         vector<Render_Object*>::iterator render_object;
         for (render_object = layer->begin(); render_object != layer->end(); render_object++){
-
+            // check whether is subclass and render for it
             // do all rect draw operations here
-            (*render_object)->draw();
+            (*render_object)->draw(this);
 
 
         }
@@ -106,14 +114,13 @@ void Drawer::cl_draw_finish(){
 #endif
 }
 
-Render_Object::Render_Object(shared_ptr<Drawer> drawer, render_rect_properties* rect_props, int num_rect_props, int render_layer){
-    if (render_layer > drawer->getRenderLayersSize()) throw std::invalid_argument("Invalid index for render_layer: Render layers must be contiguous.");
-    m_drawer = drawer;
+Render_Object::Render_Object(shared_ptr<Drawer> drawer, render_rect_properties* rect_props, int num_rect_props, int render_layer, bool is_subclass)
+: m_render_layer(render_layer), m_is_subclass(is_subclass) {
     if (rect_props == NULL || num_rect_props == 0) throw std::invalid_argument("There must be at least one rect property");
     for (int i=num_rect_props;i<num_rect_props;i++){
         m_rect_props.push_back(rect_props[i]);
     }
-    
+    drawer->register_render_object(this);
 }
 
 #ifdef USING_OPENCL // Using OpenCL to render

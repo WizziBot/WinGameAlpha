@@ -13,7 +13,7 @@ void Entity_Physics::physics_tick(const float dt){
 }
 
 void Entity_Physics::register_collider_object(int collision_group, Kinematic_Object* kobj){
-    if (collision_group = collision_groups.size()){
+    if (collision_group == collision_groups.size()){
         Collider_Group new_group;
         vector<Kinematic_Object*> k_objects;
         vector<Collider_Boundary*> bounds;
@@ -27,7 +27,7 @@ void Entity_Physics::register_collider_object(int collision_group, Kinematic_Obj
 }
 
 void Entity_Physics::register_collider_boundary(int collision_group, Collider_Boundary* bound){
-    if (collision_group = collision_groups.size()){
+    if (collision_group == collision_groups.size()){
         Collider_Group new_group;
         vector<Kinematic_Object*> k_objects;
         vector<Collider_Boundary*> bounds;
@@ -77,9 +77,11 @@ void Entity_Physics::process_collisions(){
                 kobj_otherY = (*kobj_other)->m_posY;
                 collider2 = (*(*kobj_other)->getCollider()).m_bounds;
                 // check the absolute differences in x and y coords compared the the sum of the distances to the edge from the centre
-                if (abs(kobjX-kobj_otherX) < collider2.half_width+collider1.half_width && abs(kobjY-kobj_otherY) > collider1.half_height+collider2.half_height){
-                    (*kobj)->onCollision(OBJECT_COLLIDER,collider2,0);
-                }
+                if (abs(kobjX-kobj_otherX) < collider2.half_width+collider1.half_width && kobjY+collider1.half_height > kobj_otherY-collider2.half_height) out_flag = BOUND_TOP;
+                if (abs(kobjX-kobj_otherX) < collider2.half_width+collider1.half_width && kobjY-collider1.half_height < kobj_otherY+collider2.half_height) out_flag = BOUND_BOTTOM;
+                if (abs(kobjY-kobj_otherY) < collider2.half_height+collider1.half_height && kobjX+collider1.half_width > kobj_otherY-collider2.half_width) out_flag = BOUND_LEFT;
+                if (abs(kobjY-kobj_otherY) < collider2.half_height+collider1.half_height && kobjX-collider1.half_width < kobj_otherY+collider2.half_width) out_flag = BOUND_TOP;
+                (*kobj)->onCollision(OBJECT_COLLIDER,(void*)kobj_other.base(),0);
             }
             for (bound = (*group).bounds.begin(); bound != (*group).bounds.end(); bound++){
                 boundX = (*bound)->m_x_offset;
@@ -92,7 +94,7 @@ void Entity_Physics::process_collisions(){
                 else if (flags & BOUND_LEFT && kobjX-collider1.half_width < boundX-collider2.half_width) out_flag = BOUND_LEFT;
                 else if (flags & BOUND_RIGHT && kobjX+collider1.half_width > boundX+collider2.half_width) out_flag = BOUND_RIGHT;
                 else continue; // do not to call oncollsion if none of the conditions met
-                (*kobj)->onCollision(COLLIDER_BOUNDARY,collider2,out_flag);
+                (*kobj)->onCollision(COLLIDER_BOUNDARY,(void*)bound.base(),out_flag);
             }
         }
     }

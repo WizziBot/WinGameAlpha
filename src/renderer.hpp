@@ -20,14 +20,15 @@ namespace WinGameAlpha{
 extern Render_State render_state;
 
 struct render_rect_properties{
-    float x_offset;
-    float y_offset;
+    float x_offset=0;
+    float y_offset=0;
     float width;
     float height;
     uint32_t colour;
 };
 
 class Render_Object {
+friend class Drawer;
 public:
 /* Render object which contains rectangles to be rendered on each draw() call if registered
     @param drawer a pointer to the drawer instance
@@ -36,18 +37,19 @@ public:
     @param render_layer the id of the render layer of the object where the render objects within the layer will be rendered together,
     the render layers must be declared contiguously i.e. layer 0 must exist before layer 1
 */
-Render_Object(shared_ptr<Drawer> drawer, render_rect_properties* rect_props, int num_rect_props, int render_layer);
+Render_Object(shared_ptr<Drawer> drawer, render_rect_properties* rect_props, int num_rect_props, int render_layer, bool is_subclass);
 
-virtual void draw(){};
+virtual void draw(Drawer* drawer){};
+
+int m_render_layer;
 
 protected:
+bool m_is_subclass;
 vector<render_rect_properties> m_rect_props;
-shared_ptr<Drawer> m_drawer;
     
 };
 
 class Drawer {
-friend class Render_Object;
 public:
 
 Drawer(wga_err& drawer_err);
@@ -56,16 +58,13 @@ Drawer(wga_err& drawer_err);
 /* Draw all registered render objects*/
 void draw_objects();
 
-/* Registers a render object with the drawer which gets rendered every call to draw()
-    @param render_obj a pointer to the render object
-    @param render_layer the id of the render layer of the object where the render objects within the layer will be rendered together,
+/* Creates a render object and registers it with the drawer. Gets rendered every call to draw().
+    Note: The id of the render layer of the object is a group where the render objects within the layer will be rendered together,
     the render layers must be declared contiguously i.e. layer 0 must exist before layer 1
+    @param render_obj a pointer to the render object
+    @return WGA_SUCCESS on success and WGA_FAILURE on except
 */
-void register_render_object(Render_Object* render_obj, int render_layer);
-
-int getRenderLayersSize(){
-    return render_layers.size();
-}
+wga_err register_render_object(Render_Object* render_obj);
 
 /* Clear window to one colour */
 void clear_screen(uint32_t colour);

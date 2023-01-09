@@ -51,6 +51,7 @@ shared_ptr<Player> player1;
 shared_ptr<Player> player2;
 shared_ptr<Ball> ball;
 vector<Collider_Boundary> bounds;
+vector<Render_Object> render_objects;
 
 // static Player_Data player1;
 // static Player_Data player2;
@@ -116,6 +117,25 @@ void render_init(){
         .half_width = ARENA_R,
         .half_height = ARENA_U
     };
+    render_rect_properties arena_rect = {
+        .width = ARENA_R,
+        .height = ARENA_U,
+        .colour = ARENA_COLOUR
+    };
+    render_rect_properties player_rect = {
+        .width = P_WIDTH,
+        .height = P_HEIGHT,
+        .colour = P_COLOUR
+    };
+    render_rect_properties ball_rect = {
+        .width = B_DIAMETER,
+        .height = B_DIAMETER,
+        .colour = B_COLOUR
+    };
+    Render_Object arena_robj(drawer, &arena_rect,1,0);
+    render_objects.push_back(arena_robj);
+    drawer->register_render_object(&arena_robj);
+    
     // declare background render objects earlier
     player1 = make_shared<Player>(physics, drawer, &player1_init,0, &player_aabb, 2);
     player2 = make_shared<Player>(physics, drawer, &player2_init,0, &player_aabb, 2);
@@ -128,6 +148,7 @@ void render_init(){
         physics->register_collider_boundary(0,bound.base());
     }
 
+    drawer->clear_screen(BACKGROUND_COLOUR);
 
 #ifdef DEBUG_INFO
     {
@@ -158,12 +179,10 @@ void render_tick(Input& input, float dt){
 #endif
 
     // Set acceleration
-    player1.m_ddy = 0;
-    player2.m_ddy = 0;
-    if (btn_down(BUTTON_UP)) player1.m_ddy = P_ACCELERATION;
-    if (btn_down(BUTTON_DOWN)) player1.m_ddy = -P_ACCELERATION;
-    if (btn_down(BUTTON_KUP)) player2.m_ddy = P_ACCELERATION;
-    if (btn_down(BUTTON_KDOWN)) player2.m_ddy = -P_ACCELERATION;
+    if (btn_down(BUTTON_UP)) player1->accelerate(ACC_UP,P_ACCELERATION);
+    if (btn_down(BUTTON_DOWN)) player2->accelerate(ACC_DOWN,P_ACCELERATION);
+    if (btn_down(BUTTON_KUP)) player2->accelerate(ACC_UP,P_ACCELERATION);
+    if (btn_down(BUTTON_KDOWN)) player2->accelerate(ACC_DOWN,P_ACCELERATION);
 
     physics->physics_tick(dt);
     
@@ -177,58 +196,6 @@ void render_tick(Input& input, float dt){
     time_diff_other = (float)(time2.QuadPart - time1.QuadPart)/performance_frequency;
     time_diff_render = (float)(end_time.QuadPart - time2.QuadPart)/performance_frequency;
 #endif
-
-    // Detete everything after this
-    return;
-
-    // Apply kinematics
-    APPLY_KINEMATICS_TICK(player1.m_posY,player1.m_dy,player1.m_ddy,dt);
-    APPLY_KINEMATICS_TICK(player2.m_posY,player2.m_dy,player2.m_ddy,dt);
-
-    ball.m_posX += ball.m_dx * dt;
-    ball.m_posY += ball.m_dy * dt;
-
-    // Ball collision players AABB
-
-    if (within_bounds(P_X_DISPLACEMENT - P_WIDTH/2 - B_DIAMETER/2,ball.m_posX,P_X_DISPLACEMENT + P_WIDTH/2 + B_DIAMETER/2) &&
-        within_bounds(player2.m_posY-P_HEIGHT/2-B_DIAMETER/2,ball.m_posY,player2.m_posY+P_HEIGHT/2+B_DIAMETER/2)){
-        if (ball.m_dx > 0){
-            ball.m_dx *= -1;
-            if (ball.m_dy == 0) ball.m_dy = (((uint32_t)player2.m_dy & (1 << 31)) ? -B_Y_SPEED : B_Y_SPEED); // conditional on sign of float
-        }
-    } else if (within_bounds(-P_WIDTH/2 - P_X_DISPLACEMENT - B_DIAMETER/2,ball.m_posX,P_WIDTH/2 - P_X_DISPLACEMENT + B_DIAMETER/2) &&
-               within_bounds(player1.m_posY-P_HEIGHT-B_DIAMETER/2,ball.m_posY,player1.m_posY+P_HEIGHT/2+B_DIAMETER/2)) {
-        if (ball.m_dx < 0){
-            ball.m_dx *= -1;
-            if (ball.m_dy == 0) ball.m_dy = ((uint32_t)player1.m_dy & (1 << 31)) ? -B_Y_SPEED : B_Y_SPEED;
-        }
-    }
-
-    // Bounds of arena collisions
-    if (player1.m_posY > ARENA_U-P_HEIGHT/2){
-        player1.m_posY = ARENA_U-P_HEIGHT/2;
-        player1.m_dy = 0;
-    } else if (player1.m_posY < ARENA_D+P_HEIGHT/2){
-        player1.m_posY = ARENA_D+P_HEIGHT/2;
-        player1.m_dy = 0;
-    }
-    if (player2.m_posY > ARENA_U-P_HEIGHT/2){
-        player2.m_posY = ARENA_U-P_HEIGHT/2;
-        player2.m_dy = 0;
-    } else if (player2.m_posY < ARENA_D+P_HEIGHT/2){
-        player2.m_posY = ARENA_D+P_HEIGHT/2;
-        player2.m_dy = 0;
-    }
-    if (ball.m_posY > ARENA_U-B_DIAMETER/2){
-        ball.m_posY = ARENA_U-B_DIAMETER/2;
-        ball.m_dy *= -1;
-    } else if (ball.m_posY < ARENA_D+B_DIAMETER/2){
-        ball.m_posY = ARENA_D+B_DIAMETER/2;
-        ball.m_dy *= -1;
-    }
-
-    // Render bkg
-
 }
 
 }

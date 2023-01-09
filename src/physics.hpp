@@ -15,9 +15,9 @@
 #define BOUND_RIGHT (1<<3)
 #define BOUND_ALL BOUND_TOP | BOUND_BOTTOM | BOUND_LEFT | BOUND_RIGHT
 
-typedef uint8_t bound_flags;
-
 namespace WinGameAlpha {
+
+typedef uint8_t bound_flags;
 
 enum collider_type{
     OBJECT_COLLIDER,
@@ -103,8 +103,12 @@ Collider_Boundary(float x_offset, float y_offset, aabb_bounds bounds,bound_flags
 aabb_bounds getBounds(){
     return m_bounds;
 };
-bound_flags getFlags(){
-    return m_flags;
+
+float getXoffset(){
+    return m_x_offset;
+}
+float getYoffset(){
+    return m_y_offset;
 }
 
 private:
@@ -146,17 +150,15 @@ Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_initial_propertie
     m_collider.reset();
 }
 
-/* Called every dt tick to process kinematic movement */
-virtual void tick(const float dt){
-    cout << "TICK: THIS SHOULD NEVER RUN" << endl;
-};
+/* Called every dt tick to process kinematic movement 
+    @param dt delta time per frame
+*/
+virtual void tick(const float dt){};
 
 /* Called when a collision is detected 
     @param other_type the type of collider the object has collided with
 */
-virtual void onCollision(collider_type other_type, aabb_bounds other_bounds, bound_flags flags){
-    cout << "ONCOLLISION: THIS SHOULD NEVER RUN" << endl;
-};
+virtual void onCollision(const collider_type other_type, void* other_collider_ptr, bound_flags active_flags){};
 
 shared_ptr<Collider> getCollider(){
     return m_collider;
