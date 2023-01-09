@@ -12,8 +12,8 @@
 namespace WinGameAlpha{
 
 struct Button_State{
-    bool down;
-    bool changed;
+    bool down = false;
+    bool changed = false;
 };
 
 enum Button_Type{

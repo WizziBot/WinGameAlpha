@@ -5,12 +5,9 @@
 #define P_B_RENDER_LAYER 1
 
 // Physics
-#define P_SPEED 50.f
-#define P_ACCELERATION 500
-#define B_Y_SPEED 25.f
-#define B_INIT_SPEED 50.f
-#define DRAG .05f
-#define GAME_COLLISION_GROUP 0
+#define ARENA_COLLISION_GROUP 0
+#define P_COLLISION_GROUP 1
+#define B_COLLISION_GROUP 2
 
 // Size defines
 #define ARENA_L -85.f
@@ -123,15 +120,15 @@ void render_init(){
     shared_ptr<Render_Object> arena_robj = make_shared<Render_Object>(drawer, &arena_rect,1,ARENA_RENDER_LAYER,false);
     render_objects.push_back(arena_robj);
     
-    player1 = make_shared<Player>(physics, drawer, &player1_init, GAME_COLLISION_GROUP, &player_aabb, &player_rect, 1, P_B_RENDER_LAYER);
-    player2 = make_shared<Player>(physics, drawer, &player2_init, GAME_COLLISION_GROUP, &player_aabb, &player_rect, 1, P_B_RENDER_LAYER);
-    ball = make_shared<Ball>(physics, drawer, &ball_init, GAME_COLLISION_GROUP, &ball_aabb, &ball_rect, 1, P_B_RENDER_LAYER);
+    player1 = make_shared<Player>(physics, drawer, &player1_init, P_COLLISION_GROUP, &player_aabb, &player_rect, 1, P_B_RENDER_LAYER);
+    player2 = make_shared<Player>(physics, drawer, &player2_init, P_COLLISION_GROUP, &player_aabb, &player_rect, 1, P_B_RENDER_LAYER);
+    ball = make_shared<Ball>(physics, drawer, &ball_init, B_COLLISION_GROUP, &ball_aabb, &ball_rect, 1, P_B_RENDER_LAYER);
     Collider_Boundary arena_bound(0, 0, arena_aabb, BOUND_TOP | BOUND_BOTTOM);
     bounds.push_back(arena_bound);
     // register the arena bounds
     vector<Collider_Boundary>::iterator bound;
     for (bound = bounds.begin(); bound != bounds.end(); bound++){
-        physics->register_collider_boundary(0,bound.base());
+        physics->register_collider_boundary(ARENA_COLLISION_GROUP,bound.base());
     }
 
     drawer->clear_screen(BACKGROUND_COLOUR);

@@ -8,7 +8,7 @@
 /* DEFINES */
 #define W_WIDTH 800
 #define W_HEIGHT 450
-#define TICK_DELAY 2
+#define TICK_DELAY 10
 #define C_ONMSG "WinGameAlpha: Started"
 
 namespace WinGameAlpha {
