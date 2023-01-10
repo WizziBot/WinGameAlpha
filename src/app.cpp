@@ -36,10 +36,6 @@ shared_ptr<Ball> ball;
 vector<Collider_Boundary> bounds;
 vector<shared_ptr<Render_Object>> render_objects;
 
-// static Player_Data player1;
-// static Player_Data player2;
-// static Ball_Data ball;
-
 #ifdef DEBUG_INFO
 LARGE_INTEGER time1, time2, end_time;
 float time_diff_other = 0.f;
@@ -49,16 +45,6 @@ float performance_frequency;
 
 // Functions
 
-// inline static void render_background(){
-//     drawer->draw_rect(0,0,ARENA_R*2,ARENA_U*2,ARENA_COLOUR);
-//     drawer->draw_rect(ball.m_posX,ball.m_posY,B_DIAMETER,B_DIAMETER,B_COLOUR);
-//     drawer->draw_rect(-P_X_DISPLACEMENT,player1.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
-//     drawer->draw_rect(P_X_DISPLACEMENT,player2.m_posY,P_WIDTH,P_HEIGHT,P_COLOUR);
-// #ifdef USING_OPENCL
-//     drawer->cl_draw_finish();
-// #endif
-// }
-
 void render_init(){
     wga_err err;
 
@@ -66,13 +52,14 @@ void render_init(){
     drawer = make_shared<Drawer>(err);
     if (err != WGA_SUCCESS){
         drawer.reset();
-#ifdef USING_OPENCL
         WGACHECKERRNO("Failed to instantiate drawer.",err);
-#endif
     }
 
     // Register objects
     physics = make_shared<Entity_Physics>();
+
+    // Registering of game objects
+    #include "textures.hpp" //include render textures
 
     kinematic_initial_properties player1_init = {
         .posX = -P_X_DISPLACEMENT
@@ -142,8 +129,6 @@ void render_update(){
 #ifdef USING_OPENCL
     WGAERRCHECK(drawer->cl_resize());
 #endif
-    // drawer->clear_screen(BACKGROUND_COLOUR);
-    // render_background();
 }
 
 void render_tick(Input& input, float dt){
