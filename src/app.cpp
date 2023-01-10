@@ -1,27 +1,5 @@
 #include "app.hpp"
-
-// Rendering
-#define ARENA_RENDER_LAYER 0
-#define P_B_RENDER_LAYER 1
-
-// Physics
-#define ARENA_COLLISION_GROUP 0
-#define P_COLLISION_GROUP 1
-#define B_COLLISION_GROUP 2
-
-// Size defines
-#define ARENA_R 90.f
-#define ARENA_U 45.f
-#define P_WIDTH 5
-#define P_HEIGHT 24
-#define B_DIAMETER 2
-#define P_X_DISPLACEMENT 82
-
-// Colours
-#define BACKGROUND_COLOUR 0x2A2A2A
-#define ARENA_COLOUR 0x222222
-#define B_COLOUR 0xffffff
-#define P_COLOUR 0xff0000
+#include "textures.hpp"
 
 namespace WinGameAlpha {
 
@@ -58,9 +36,6 @@ void render_init(){
     // Register objects
     physics = make_shared<Entity_Physics>();
 
-    // Registering of game objects
-    #include "textures.hpp" //include render textures
-
     kinematic_initial_properties player1_init = {
         .posX = -P_X_DISPLACEMENT
     };
@@ -83,22 +58,7 @@ void render_init(){
         .half_width = ARENA_R,
         .half_height = ARENA_U
     };
-    render_rect_properties arena_rect = {
-        .width = ARENA_R*2,
-        .height = ARENA_U*2,
-        .colour = ARENA_COLOUR
-    };
-    render_rect_properties player_rect = {
-        .width = P_WIDTH,
-        .height = P_HEIGHT,
-        .colour = P_COLOUR
-    };
-    render_rect_properties ball_rect = {
-        .width = B_DIAMETER,
-        .height = B_DIAMETER,
-        .colour = B_COLOUR
-    };
-    shared_ptr<Render_Object> arena_robj = make_shared<Render_Object>(drawer, &arena_rect,1,ARENA_RENDER_LAYER,false);
+    shared_ptr<Render_Object> arena_robj = make_shared<Render_Object>(drawer, &arena_render_matrix, ARENA_RENDER_LAYER);
     render_objects.push_back(arena_robj);
     Collider_Boundary arena_bound(0, 0, arena_aabb, BOUND_TOP | BOUND_BOTTOM);
     bounds.push_back(arena_bound);
@@ -109,12 +69,12 @@ void render_init(){
     }
     vector<int> player_targets(1,ARENA_COLLISION_GROUP);
     vector<int> ball_targets; ball_targets.push_back(ARENA_COLLISION_GROUP); ball_targets.push_back(P_COLLISION_GROUP);
-    player1 = make_shared<Player>(physics, drawer, &player1_init, P_COLLISION_GROUP, player_targets, &player_aabb, &player_rect, 1, P_B_RENDER_LAYER);
-    player2 = make_shared<Player>(physics, drawer, &player2_init, P_COLLISION_GROUP, player_targets, &player_aabb, &player_rect, 1, P_B_RENDER_LAYER);
-    ball = make_shared<Ball>(physics, drawer, &ball_init, B_COLLISION_GROUP, ball_targets, &ball_aabb, &ball_rect, 1, P_B_RENDER_LAYER);
-
-    drawer->clear_screen(BACKGROUND_COLOUR);
+    player1 = make_shared<Player>(physics, drawer, &player1_init, P_COLLISION_GROUP, player_targets, &player_aabb, &player_render_matrix, P_B_RENDER_LAYER);
+    player2 = make_shared<Player>(physics, drawer, &player2_init, P_COLLISION_GROUP, player_targets, &player_aabb, &player_render_matrix, P_B_RENDER_LAYER);
+    ball = make_shared<Ball>(physics, drawer, &ball_init, B_COLLISION_GROUP, ball_targets, &ball_aabb, &ball_render_matrix, P_B_RENDER_LAYER);
+    
     drawer->set_background_colour(BACKGROUND_COLOUR);
+    drawer->draw_objects();
 
 #ifdef DEBUG_INFO
     {

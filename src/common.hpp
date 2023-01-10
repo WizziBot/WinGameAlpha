@@ -16,6 +16,15 @@ struct Button_State{
     bool changed = false;
 };
 
+#ifdef ENABLE_MOUSE
+struct Mouse_State{
+    int x_pos = 0;
+    int y_pos = 0;
+    bool down = false;
+    bool changed = false;
+};
+#endif
+
 enum Button_Type{
     BUTTON_UP,
     BUTTON_DOWN,
@@ -31,6 +40,9 @@ enum Button_Type{
 
 struct Input {
     Button_State buttons[BUTTON_COUNT];
+#ifdef ENABLE_MOUSE
+    Mouse_State mouse_state;
+#endif
 };
 
 }

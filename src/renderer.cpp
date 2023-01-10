@@ -54,20 +54,42 @@ wga_err Drawer::register_render_object(Render_Object* render_obj){
 void Drawer::draw_objects(){
     clear_screen(m_background_colour);
     vector<vector<Render_Object*> >::iterator layer;
+    Render_Matrix* matrix;
+    draw_pos offset;
+    float matrix_offset_x;
+    float matrix_offset_y;
     for (layer = render_layers.begin(); layer != render_layers.end(); layer++){
         // Posible optimisation for OpenCL
         vector<Render_Object*>::iterator render_object;
         for (render_object = (*layer).begin(); render_object != (*layer).end(); render_object++){
-            if ((*render_object)->m_is_subclass){
-                (*render_object)->draw(this);
-            } else {
-                vector<render_rect_properties>::iterator rect;
-                for (rect = (*render_object)->m_rect_props.begin(); rect != (*render_object)->m_rect_props.end(); rect++){
-                    draw_rect(rect->x_offset,rect->y_offset,rect->width,rect->height,rect->colour);
-                }
-            }
-        }
+            offset = (*render_object)->draw_get_pos();
 
+#ifdef USING_OPENCL
+            // Optimisation for OpenCL
+#else
+            matrix = (*render_object)->m_render_matrix;
+            matrix_offset_x = matrix->m_x_offset;
+            matrix_offset_y = matrix->m_y_offset;
+            float unit_size_x = matrix->m_unit_size_x;
+            float unit_size_y = matrix->m_unit_size_y;
+            float matrix_half_height = matrix->m_height/2;
+            float matrix_half_width = matrix->m_width/2;
+            float square_x_init = offset.x - matrix_half_width*unit_size_x + unit_size_x/2 + matrix_offset_x;
+            float square_x = square_x_init;
+            float square_y = offset.y + matrix_half_height*unit_size_y - unit_size_y/2 + matrix_offset_y;
+            uint32_t* unit_col = matrix->m_matrix;
+            for (int y = 0; y < matrix->m_height; y++){
+                for (int x = 0; x < matrix->m_width; x++){
+                    if ((*unit_col) & ALPHA_BIT) continue;
+                    draw_rect(square_x,square_y,unit_size_x,unit_size_y,*unit_col);
+                    square_x += unit_size_x;
+                    unit_col++;
+                }
+                square_y -= unit_size_y;
+                square_x = square_x_init;
+            }
+#endif
+        }
     }
 }
 
@@ -128,13 +150,15 @@ void Drawer::cl_draw_finish(){
 #endif
 }
 
-Render_Object::Render_Object(shared_ptr<Drawer> drawer, render_rect_properties* rect_props, int num_rect_props, int render_layer, bool is_subclass)
-: m_render_layer(render_layer), m_is_subclass(is_subclass) {
-    if (rect_props == NULL || num_rect_props == 0) throw std::invalid_argument("Renderer Error: There must be at least one rect property");
-    for (int i=0;i<num_rect_props;i++){
-        m_rect_props.push_back(rect_props[i]);
-    }
+Render_Object::Render_Object(shared_ptr<Drawer> drawer, Render_Matrix* render_matrix, int render_layer)
+: m_render_layer(render_layer), m_render_matrix(render_matrix){
+    if (render_matrix == NULL) throw std::invalid_argument("Renderer Error: The render matrix must not be null");
     WGAERRCHECK(drawer->register_render_object(this));
+}
+
+Render_Matrix::Render_Matrix(float x_offset, float y_offset, float width, float height, uint32_t* matrix, float unit_size_x, float unit_size_y)
+: m_x_offset(x_offset), m_y_offset(y_offset), m_width(width), m_height(height), m_matrix(matrix), m_unit_size_x(unit_size_x), m_unit_size_y(unit_size_y) {
+    if (width == 0 || height == 0) throw std::invalid_argument("Renderer Error: The width and height of render matrix must be above 0");
 }
 
 #ifdef USING_OPENCL // Using OpenCL to render

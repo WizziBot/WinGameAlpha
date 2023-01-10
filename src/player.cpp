@@ -36,11 +36,4 @@ void Player::onCollision(const collider_type other_type, void* other_collider_pt
     }
 }
 
-void Player::draw(Drawer* drawer){
-    vector<render_rect_properties>::iterator rect;
-    for (rect = m_rect_props.begin(); rect != m_rect_props.end(); rect++){
-        drawer->draw_rect(m_posX,m_posY,rect->width,rect->height,rect->colour);
-    }
-}
-
 }
