@@ -59,10 +59,6 @@ float performance_frequency;
 // #endif
 // }
 
-void app_cleanup(){
-    drawer.reset();
-}
-
 void render_init(){
     wga_err err;
 
