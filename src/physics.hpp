@@ -6,7 +6,7 @@
 #define P_SPEED 50.f
 #define P_ACCELERATION 500
 #define B_Y_SPEED 20.f
-#define B_INIT_SPEED 50.f
+#define B_INIT_SPEED 40.f
 #define P_DRAG .05f
 
 #define BOUND_TOP (1<<0)

@@ -10,14 +10,12 @@
 #define B_COLLISION_GROUP 2
 
 // Size defines
-#define ARENA_L -85.f
-#define ARENA_R 85.f
+#define ARENA_R 90.f
 #define ARENA_U 45.f
-#define ARENA_D -45.f
 #define P_WIDTH 5
 #define P_HEIGHT 24
 #define B_DIAMETER 2
-#define P_X_DISPLACEMENT 80
+#define P_X_DISPLACEMENT 82
 
 // Colours
 #define BACKGROUND_COLOUR 0x2A2A2A
@@ -119,10 +117,6 @@ void render_init(){
     };
     shared_ptr<Render_Object> arena_robj = make_shared<Render_Object>(drawer, &arena_rect,1,ARENA_RENDER_LAYER,false);
     render_objects.push_back(arena_robj);
-    
-    player1 = make_shared<Player>(physics, drawer, &player1_init, P_COLLISION_GROUP, &player_aabb, &player_rect, 1, P_B_RENDER_LAYER);
-    player2 = make_shared<Player>(physics, drawer, &player2_init, P_COLLISION_GROUP, &player_aabb, &player_rect, 1, P_B_RENDER_LAYER);
-    ball = make_shared<Ball>(physics, drawer, &ball_init, B_COLLISION_GROUP, &ball_aabb, &ball_rect, 1, P_B_RENDER_LAYER);
     Collider_Boundary arena_bound(0, 0, arena_aabb, BOUND_TOP | BOUND_BOTTOM);
     bounds.push_back(arena_bound);
     // register the arena bounds
@@ -130,6 +124,11 @@ void render_init(){
     for (bound = bounds.begin(); bound != bounds.end(); bound++){
         physics->register_collider_boundary(ARENA_COLLISION_GROUP,bound.base());
     }
+    vector<int> player_targets(1,ARENA_COLLISION_GROUP);
+    vector<int> ball_targets; ball_targets.push_back(ARENA_COLLISION_GROUP); ball_targets.push_back(P_COLLISION_GROUP);
+    player1 = make_shared<Player>(physics, drawer, &player1_init, P_COLLISION_GROUP, player_targets, &player_aabb, &player_rect, 1, P_B_RENDER_LAYER);
+    player2 = make_shared<Player>(physics, drawer, &player2_init, P_COLLISION_GROUP, player_targets, &player_aabb, &player_rect, 1, P_B_RENDER_LAYER);
+    ball = make_shared<Ball>(physics, drawer, &ball_init, B_COLLISION_GROUP, ball_targets, &ball_aabb, &ball_rect, 1, P_B_RENDER_LAYER);
 
     drawer->clear_screen(BACKGROUND_COLOUR);
 
