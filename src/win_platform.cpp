@@ -19,7 +19,6 @@ bool running = false;
 bool resizing = false;
 
 LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
-    fflush(stdout);
     LRESULT result = 0;
     switch(Msg){
         case WM_CLOSE:
