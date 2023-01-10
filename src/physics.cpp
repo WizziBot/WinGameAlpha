@@ -99,7 +99,7 @@ void Entity_Physics::process_collisions(){
                     kobj_otherY = (*kobj_other)->m_posY;
                     collider2 = (*(*kobj_other)->getCollider()).m_bounds;
                     if (abs(kobjX-kobj_otherX) < collider2.half_width+collider1.half_width &&
-                        abs(kobjY-kobj_otherY) < collider1.half_height+collider2.half_height) {
+                        abs(kobjY-kobj_otherY) < collider1.half_height+collider2.half_height){
                         if (kobjY - collider1.half_height < kobj_otherY - collider2.half_height){
                             out_flag = BOUND_TOP;
                             if (hard_collision) (*kobj)->m_posY = kobj_otherY - collider1.half_height - collider2.half_height;

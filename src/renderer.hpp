@@ -84,8 +84,11 @@ void draw_rect(float x, float y, float width, float height, uint32_t colour);
 void cl_draw_finish();
 /* Resize event */
 wga_err cl_resize();
+/* Set background to be coloured*/
+void set_background_colour(uint32_t colour);
 
 private:
+uint32_t m_background_colour=0;
 vector<vector<Render_Object*> > render_layers;
 
 #ifdef USING_OPENCL

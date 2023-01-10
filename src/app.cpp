@@ -131,6 +131,7 @@ void render_init(){
     ball = make_shared<Ball>(physics, drawer, &ball_init, B_COLLISION_GROUP, ball_targets, &ball_aabb, &ball_rect, 1, P_B_RENDER_LAYER);
 
     drawer->clear_screen(BACKGROUND_COLOUR);
+    drawer->set_background_colour(BACKGROUND_COLOUR);
 
 #ifdef DEBUG_INFO
     {

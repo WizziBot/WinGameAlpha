@@ -36,7 +36,7 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
             GetClientRect(hWnd,&rect);
             render_state.width = rect.right - rect.left;
             render_state.height = rect.bottom - rect.top;
-            cout << "ASSIGNING MEMORY" << endl;
+            // cout << "ASSIGNING MEMORY" << endl;
 #ifndef USING_OPENCL
             int buffer_size = render_state.width*render_state.height*sizeof(uint32_t); //3 bytes for RGB and 1 byte padding
             if (render_state.memory) VirtualFree(render_state.memory,0,MEM_RELEASE);
@@ -44,13 +44,13 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
             if (render_state.memory == NULL){
                 std::cerr << "Memory assignment failure: Render state" << std::endl;
             }
-            cout << "ASSIGNINED MEMORY" << endl;
+            // cout << "ASSIGNINED MEMORY" << endl;
 #endif
             render_state.bitmap_info.bmiHeader.biWidth = render_state.width;
             render_state.bitmap_info.bmiHeader.biHeight = render_state.height;
             
             // Render every window size update
-            cout << "RESIZE EVENT" << endl;
+            // cout << "RESIZE EVENT" << endl;
             if (running) render_update();
         } break;
 

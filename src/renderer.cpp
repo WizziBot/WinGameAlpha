@@ -52,6 +52,7 @@ wga_err Drawer::register_render_object(Render_Object* render_obj){
 }
 
 void Drawer::draw_objects(){
+    clear_screen(m_background_colour);
     vector<vector<Render_Object*> >::iterator layer;
     for (layer = render_layers.begin(); layer != render_layers.end(); layer++){
         // Posible optimisation for OpenCL
@@ -82,6 +83,10 @@ void Drawer::clear_screen(uint32_t colour){
         }
     }
     #endif
+}
+
+void Drawer::set_background_colour(uint32_t colour){
+    m_background_colour = colour;
 }
 
 void Drawer::draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour){
