@@ -8,7 +8,7 @@ using std::shared_ptr;
 using std::make_shared;
 
 // Enable OpenCL
-// #define USING_OPENCL
+#define USING_OPENCL
 
 // Enable debug information
 // #define DEBUG_INFO
