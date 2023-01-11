@@ -12,9 +12,33 @@
 #define OCL_ERROR_CHECKING
 #define CL_TARGET_OPENCL_VERSION 300
 #include <CL/cl.h>
+#define MATRIX_DATA_BUF_SIZE 10
 #define RECT_DATA_BUF_SIZE 5
+#define OCLERR(msg) {cout << "OpenCL Error: " << msg << endl; \
+                    return WGA_FAILURE;}
+
+#ifdef OCL_ERROR_CHECKING
+#define OCLCHECK(arg) if ((err = arg) != CL_SUCCESS) { cout << "OpenCL Internal Error: Code(" << err << ")\n" \
+                      << #arg << endl; \
+                      return WGA_FAILURE;}
+#define OCLCHECKERR(msg,err_no) if (err_no != CL_SUCCESS) { cout << "OpenCL Internal Error: "<< msg <<" Code(" << err_no << ")" << endl; \
+                      return WGA_FAILURE;}
+#define OCLEX(arg) if ((err = arg) != CL_SUCCESS) { cout << "OpenCL Internal Error: Code(" << err << ")\n" \
+                      << #arg << endl;\
+                      throw std::invalid_argument("OPENCLERR");}
+#define OCLEXERR(msg,err_no) if (err_no != CL_SUCCESS) { cout << "OpenCL Internal Error: "<< msg <<" Code(" << err_no << ")" << endl; \
+                      throw std::invalid_argument("OPENCLERR");}
+
+#else
+#define OCLCHECK(arg) arg
+#define OCLCHECKERR(err)
+#define OCLEX(arg) arg
+#define OCLEXERR(err)
+#endif // OCL_ERROR_CHECKING
+
 #endif
 
+#define MAX_MATRIX_SIZE 128*128
 #define ALPHA_BIT (uint32_t)(1<<31) //high bit of 32bit unsigned
 #define AB ALPHA_BIT
 
@@ -137,16 +161,54 @@ cl_device_id device;
 cl_context context;
 cl_command_queue queue;
 cl_program program;
-cl_kernel draw_rect_kernel;
 
+// Kernel on OpenCL device
+cl_kernel draw_rect_kernel;
+cl_kernel draw_matrix_kernel;
+
+// Memory object on OpenCL device
 cl_mem src_buf;
+cl_mem matrix_data_buf;
+cl_mem matrix_buf;
 cl_mem rect_data_buf;
 
 // Buffer Map into parameter list of kernel
 cl_uint *rect_data;
+cl_uint *matrix_data;
+cl_uint *matrix_buffer;
 
 const char *kernel_source = \
-"__kernel void draw_rect_kernel(const __global uint *rect_data,\n\
+"__kernel void draw_matrix_kernel(const __global uint *matrix_data,\n\
+                               const __global uint *matrix_buffer,\n\
+                               __global uint *buffer)\n\
+{\n\
+    uint minid = matrix_data[0];\n\
+    uint maxid = matrix_data[1];\n\
+    uint buffer_width = matrix_data[2];\n\
+    uint width = matrix_data[3];\n\
+    uint height = matrix_data[4];\n\
+    uint unit_width = matrix_data[5];\n\
+    uint unit_height = matrix_data[6];\n\
+    uint wrap_step = matrix_data[7];\n\
+    uint x0 = matrix_data[8];\n\
+    uint y0 = matrix_data[9];\n\
+    \n\
+    uint gid = get_global_id(0);\n\
+    uint overflow = (gid/(width*unit_width)) * wrap_step;\n\
+    uint idx = minid + gid + overflow;\n\
+    uint stride = get_global_size(0);\n\
+\n\
+    int i = 1;\n\
+    int matrix_idx;\n\
+    int stride_cutoff;\n\
+    while (idx<maxid){\n\
+        matrix_idx = (((idx)%buffer_width)-x0)/(unit_width) + ((((idx)/buffer_width) - y0)/(unit_height+1))*width;\n\
+        buffer[idx] = matrix_buffer[matrix_idx];\n\
+        idx = minid + gid + stride*i + ((gid+stride*i)/(width*unit_width)) * wrap_step;\n\
+        i++;\n\
+    }\n\
+}\n\
+__kernel void draw_rect_kernel(const __global uint *rect_data,\n\
                                __global uint *buffer)\n\
 {\n\
     uint rect_data_local[5];\n\
@@ -171,7 +233,7 @@ const char *kernel_source = \
 /* Initialize OpenCL API*/
 wga_err init_opencl();
 
-/* Queue draw on OpenCL device*/
+/* Draw rect on opencl device, deprecated for main textures */
 wga_err cl_draw_rect_px(const int x0, const int y0, const int x1, const int y1,const uint32_t colour);
 
 #endif

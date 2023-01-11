@@ -31,6 +31,7 @@ void render_init(){
     if (err != WGA_SUCCESS){
         drawer.reset();
         WGACHECKERRNO("Failed to instantiate drawer.",err);
+        return;
     }
 
     // Register objects
