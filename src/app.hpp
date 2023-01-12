@@ -1,13 +1,7 @@
 #pragma once
 
 #include "core.hpp"
-#include "renderer.hpp"
-#include "texture_manager.hpp"
 #include "common.hpp"
-#include "utils.hpp"
-#include "physics.hpp"
-#include "player.hpp"
-#include "ball.hpp"
 
 // Rendering
 #define ARENA_RENDER_LAYER 0
@@ -37,6 +31,6 @@ void render_tick(Input& input, float dt);
 /* Render on resize event */
 void render_update();
 /* Cleanup */
-void app_cleanup();
+// void app_cleanup();
 
 }

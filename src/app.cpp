@@ -1,6 +1,15 @@
 
-#include "textures.hpp"
+#include "core.hpp"
 #include "app.hpp"
+#include "textures.hpp"
+#include "render_objects.hpp"
+#include "texture_manager.hpp"
+#include "renderer.hpp"
+#include "physics.hpp"
+#include "common.hpp"
+#include "utils.hpp"
+#include "player.hpp"
+#include "ball.hpp"
 
 namespace WinGameAlpha {
 
@@ -64,10 +73,10 @@ void render_init(){
         .half_width = ARENA_R,
         .half_height = ARENA_U
     };
-
-    Render_Matrix* player_render_matrix = texture_manager->create_render_matrix(0,0,1,5,player_matrix,P_HEIGHT/5,P_HEIGHT/5);
-    Render_Matrix* ball_render_matrix = texture_manager->create_render_matrix(0,0,1,1,ball_matrix,B_DIAMETER,B_DIAMETER);
-    Render_Matrix* arena_render_matrix = texture_manager->create_render_matrix(0,0,1,1,arena_matrix,ARENA_R*2,ARENA_U*2);
+    
+    shared_ptr<Render_Matrix> player_render_matrix = texture_manager->create_render_matrix(0,0,1,5,player_matrix,P_HEIGHT/5,P_HEIGHT/5);
+    shared_ptr<Render_Matrix> ball_render_matrix = texture_manager->create_render_matrix(0,0,1,1,ball_matrix,B_DIAMETER,B_DIAMETER);
+    shared_ptr<Render_Matrix> arena_render_matrix = texture_manager->create_render_matrix(0,0,1,1,arena_matrix,ARENA_R*2,ARENA_U*2);
     WGAERRCHECK(texture_manager->create_render_object(arena_render_matrix,ARENA_RENDER_LAYER));
     
     Collider_Boundary arena_bound(0, 0, arena_aabb, BOUND_TOP | BOUND_BOTTOM);

@@ -1,4 +1,6 @@
+#include "core.hpp"
 #include "renderer.hpp"
+#include "render_objects.hpp"
 
 namespace WinGameAlpha{
 
@@ -61,7 +63,7 @@ void Drawer::draw_objects(){
 #endif
     clear_screen(m_background_colour);
     vector<vector<Render_Object*> >::iterator layer;
-    Render_Matrix* matrix;
+    shared_ptr<Render_Matrix> matrix;
     draw_pos offset;
     for (layer = render_layers.begin(); layer != render_layers.end(); layer++){
         // Posible optimisation for OpenCL
@@ -70,6 +72,7 @@ void Drawer::draw_objects(){
             offset = (*render_object)->draw_get_pos();
 
             matrix = (*render_object)->m_render_matrix;
+
             float unit_size_x = matrix->m_unit_size_x;
             float unit_size_y = matrix->m_unit_size_y;
             float matrix_half_height = matrix->m_height/2;
@@ -141,16 +144,16 @@ void Drawer::draw_objects(){
 
 void Drawer::clear_screen(uint32_t colour){
     if (resizing || !running) return;
-    #ifdef USING_OPENCL
+#ifdef USING_OPENCL
         WGAERRCHECK(cl_draw_rect_px(0,0,render_state.width,render_state.height-1,colour));
-    #else
+#else
     uint32_t* pixel = (uint32_t*)render_state.memory;
     for (int y = 0; y < render_state.height; y++){
         for (int x = 0; x < render_state.width; x++){
             *pixel++ = colour; 
         }
     }
-    #endif
+#endif
 }
 
 void Drawer::set_background_colour(uint32_t colour){
@@ -179,8 +182,6 @@ void Drawer::draw_rect(float x, float y, float width, float height, uint32_t col
     int x1 = floor(render_state.height*(x/100) + render_state.height*(width/200.f) + render_state.width/2.f);
     int y0 = floor(render_state.height*(y/100) - render_state.height*(height/200.f) + render_state.height/2.f);
     int y1 = floor(render_state.height*(y/100) + render_state.height*(height/200.f) + render_state.height/2.f);
-    // cout << "DR x:"<<x<<" y:" <<y <<" w:"<< width << " h:"<<height << endl <<
-    // " x0:"<<x0<<" x1:"<<x1<<" y0"<<y0<<" y1"<<y1<< endl;
 
     draw_rect_px(x0,y0,x1,y1,colour);
 }
@@ -191,7 +192,7 @@ void Drawer::cl_draw_finish(){
 #endif
 }
 
-Render_Object::Render_Object(shared_ptr<Drawer> drawer, Render_Matrix* render_matrix, int render_layer, bool is_subclass)
+Render_Object::Render_Object(shared_ptr<Drawer> drawer, shared_ptr<Render_Matrix> render_matrix, int render_layer, bool is_subclass)
 : m_render_layer(render_layer), m_render_matrix(render_matrix){
     if (render_matrix == NULL) throw std::invalid_argument("Renderer Error: The render matrix must not be null");
     if (is_subclass) WGAERRCHECK(drawer->register_render_object(this));

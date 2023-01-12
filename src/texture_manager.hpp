@@ -1,8 +1,12 @@
 #pragma once
 #include "core.hpp"
-#include "app.hpp"
+#include "render_objects.hpp"
 
 namespace WinGameAlpha {
+
+class Render_Matrix;
+class Render_Object;
+class Drawer;
 
 class Texture_Manager {
 public:
@@ -18,7 +22,7 @@ Texture_Manager(shared_ptr<Drawer> drawer){
     the render layers must be declared contiguously i.e. layer 0 must exist before layer 1
     @return WGA_SUCCESS on succes and WGA_FAILURE on failure
 */
-wga_err create_render_object(Render_Matrix* render_matrix, int render_layer);
+wga_err create_render_object(shared_ptr<Render_Matrix> render_matrix, int render_layer);
 /* Render matrix is a matrix type texture
     @param x_offset the x_offset from the related object's coordinates
     @param y_offset the y_offset from the related object's coordinates
@@ -29,12 +33,12 @@ wga_err create_render_object(Render_Matrix* render_matrix, int render_layer);
     @param unit_size_y the height of each square unit in relative size
     @return A pointer to the created render matrix
 */
-Render_Matrix* create_render_matrix(float x_offset, float y_offset, float width, float height, uint32_t* matrix, float unit_size_x, float unit_size_y);
+shared_ptr<Render_Matrix> create_render_matrix(float x_offset, float y_offset, float width, float height, uint32_t* matrix, float unit_size_x, float unit_size_y);
 
 private:
 shared_ptr<Drawer> m_drawer;
 vector<Render_Object> render_objects;
-vector<Render_Matrix> render_matrices;
+vector<shared_ptr<Render_Matrix>> render_matrices;
 };
 
 }
