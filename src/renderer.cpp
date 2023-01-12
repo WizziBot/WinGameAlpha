@@ -13,14 +13,14 @@ using std::string;
 #define RNDERR(msg) {cout << "Renderer Error: " << msg << endl; \
                     return WGA_FAILURE;}
 
-Drawer::Drawer(wga_err& drawer_err){
+Drawer::Drawer(wga_err* drawer_err){
     wga_err err;
 #ifdef USING_OPENCL
     err = init_opencl();
 #else
     err = WGA_SUCCESS;
 #endif
-    drawer_err = err;
+    *drawer_err = err;
 }
 
 Drawer::~Drawer(){
@@ -192,10 +192,10 @@ void Drawer::cl_draw_finish(){
 #endif
 }
 
-Render_Object::Render_Object(shared_ptr<Drawer> drawer, Render_Matrix* render_matrix, int render_layer)
+Render_Object::Render_Object(shared_ptr<Drawer> drawer, Render_Matrix* render_matrix, int render_layer, bool is_subclass)
 : m_render_layer(render_layer), m_render_matrix(render_matrix){
     if (render_matrix == NULL) throw std::invalid_argument("Renderer Error: The render matrix must not be null");
-    WGAERRCHECK(drawer->register_render_object(this));
+    if (is_subclass) WGAERRCHECK(drawer->register_render_object(this));
 }
 
 Render_Matrix::Render_Matrix(float x_offset, float y_offset, float width, float height, uint32_t* matrix, float unit_size_x, float unit_size_y)

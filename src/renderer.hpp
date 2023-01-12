@@ -69,18 +69,17 @@ public:
 /* Render matrix is a matrix type texture
     @param x_offset the x_offset from the related object's coordinates
     @param y_offset the y_offset from the related object's coordinates
-    @param width the number of elements in width of the matrix
-    @param height the number of elements in height of the matrix
+    @param width the number of elements in width of the matrix - must be an integer
+    @param height the number of elements in height of the matrix - must be an integer
     @param matrix a pointer to an array of colours for each unit element
     @param unit_size_x the width of each square unit in relative size
     @param unit_size_y the height of each square unit in relative size
 */
 Render_Matrix(float x_offset, float y_offset, float width, float height, uint32_t* matrix, float unit_size_x, float unit_size_y);
 
+private:
 float m_unit_size_x;
 float m_unit_size_y;
-
-private:
 float m_x_offset=0;
 float m_y_offset=0;
 uint32_t* m_matrix;
@@ -97,8 +96,9 @@ public:
     @param render_matrix a pointer to the render matrix texture
     @param render_layer the id of the render layer of the object where the render objects within the layer will be rendered together,
     the render layers must be declared contiguously i.e. layer 0 must exist before layer 1
+    @param is_subclass whether this is a subclass
 */
-Render_Object(shared_ptr<Drawer> drawer, Render_Matrix* render_matrix, int render_layer);
+Render_Object(shared_ptr<Drawer> drawer, Render_Matrix* render_matrix, int render_layer, bool is_subclass);
 
 virtual draw_pos draw_get_pos(){
     draw_pos zero = {0,0};
@@ -113,26 +113,18 @@ Render_Matrix* m_render_matrix;
 
 // DRAWER
 class Drawer {
+friend class Render_Object;
+friend class Texture_Manager;
 public:
 
-Drawer(wga_err& drawer_err);
+Drawer(wga_err* drawer_err);
 ~Drawer();
 
 /* Draw all registered render objects*/
 void draw_objects();
 
-/* Creates a render object and registers it with the drawer. Gets rendered every call to draw().
-    Note: The id of the render layer of the object is a group where the render objects within the layer will be rendered together,
-    the render layers must be declared contiguously i.e. layer 0 must exist before layer 1
-    @param render_obj a pointer to the render object
-    @return WGA_SUCCESS on success and WGA_FAILURE on except
-*/
-wga_err register_render_object(Render_Object* render_obj);
-
 /* Clear window to one colour */
 void clear_screen(uint32_t colour);
-/* Draw rectangle absolute (pixel) coordinates*/
-void draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour);
 /* Draw rectangle with normalised (to 100) coordinates with respect to the window height.
     0,0 is the centre of the window.
     @param x the x position @param y the y position
@@ -149,6 +141,15 @@ wga_err cl_resize();
 void set_background_colour(uint32_t colour);
 
 private:
+/* Creates a render object and registers it with the drawer. Gets rendered every call to draw().
+    Note: The id of the render layer of the object is a group where the render objects within the layer will be rendered together,
+    the render layers must be declared contiguously i.e. layer 0 must exist before layer 1
+    @param render_obj a pointer to the render object
+    @return WGA_SUCCESS on success and WGA_FAILURE on except
+*/
+wga_err register_render_object(Render_Object* render_obj);
+/* Draw rectangle absolute (pixel) coordinates*/
+void draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour);
 uint32_t m_background_colour=0;
 vector<vector<Render_Object*> > render_layers;
 

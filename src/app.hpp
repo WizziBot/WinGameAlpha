@@ -2,6 +2,7 @@
 
 #include "core.hpp"
 #include "renderer.hpp"
+#include "texture_manager.hpp"
 #include "common.hpp"
 #include "utils.hpp"
 #include "physics.hpp"
