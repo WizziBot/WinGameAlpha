@@ -69,7 +69,6 @@ void Drawer::draw_objects(){
         for (render_object = (*layer).begin(); render_object != (*layer).end(); render_object++){
             offset = (*render_object)->draw_get_pos();
 
-
             matrix = (*render_object)->m_render_matrix;
             float unit_size_x = matrix->m_unit_size_x;
             float unit_size_y = matrix->m_unit_size_y;

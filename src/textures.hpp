@@ -2,8 +2,8 @@
 
 #include "app.hpp"
 
-#define BACKGROUND_COLOUR 0x2A2A2A
-#define ARENA_COLOUR 0x222222
+#define BACKGROUND_COLOUR 0x252525
+#define ARENA_COLOUR 0x1e1e1e
 #define B_COLOUR 0xffffff
 #define P_COLOUR 0xf80505
 
