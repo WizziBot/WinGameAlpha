@@ -34,6 +34,22 @@ public:
 */
 Render_Matrix(float x_offset, float y_offset, float width, float height, uint32_t* matrix, float unit_size_x, float unit_size_y);
 
+void edit_matrix_offset(float x_offset, float y_offset){
+    m_x_offset = x_offset;
+    m_y_offset = y_offset;
+}
+
+void edit_matrix_matrix(float width, float height, uint32_t* matrix){
+    m_width = width;
+    m_height = height;
+    m_matrix = matrix;
+}
+
+void edit_matrix_unit_size(float unit_size_x, float unit_size_y){
+    m_unit_size_x = unit_size_x;
+    m_unit_size_y = unit_size_y;
+}
+
 private:
 float m_unit_size_x;
 float m_unit_size_y;
