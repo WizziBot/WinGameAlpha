@@ -5,7 +5,6 @@
 namespace WinGameAlpha{
 
 extern bool running;
-extern bool resizing;
 
 using std::cout;
 using std::cerr;
@@ -55,7 +54,7 @@ wga_err Drawer::register_render_object(Render_Object* render_obj){
 }
 
 void Drawer::draw_objects(){
-    if (resizing || !running) return;
+    if (!running) return;
 #ifdef USING_OPENCL
     cl_int err = 0;
     clEnqueueUnmapMemObject(queue, src_buf, render_state.memory, 0, NULL, NULL);
@@ -66,7 +65,6 @@ void Drawer::draw_objects(){
     shared_ptr<Render_Matrix> matrix;
     draw_pos offset;
     for (layer = render_layers.begin(); layer != render_layers.end(); layer++){
-        // Posible optimisation for OpenCL
         vector<Render_Object*>::iterator render_object;
         for (render_object = (*layer).begin(); render_object != (*layer).end(); render_object++){
             offset = (*render_object)->draw_get_pos();
@@ -108,8 +106,6 @@ void Drawer::draw_objects(){
             matrix_data[7] = render_state.width - unit_size_x_px*matrix->m_width;
             matrix_data[8] = x0 % render_state.width;
             matrix_data[9] = y0;
-            // cout << "OPENCL x:" << x0 << " y0" << endl;
-            // fflush(stdout);
             clEnqueueUnmapMemObject(queue, matrix_data_buf, matrix_data, 0, NULL, NULL);
             // Wait for previous kernel to finish before changing matrix buffer
             if (render_object != (*layer).begin()) clWaitForEvents(1,&wait_for_draw);
@@ -143,7 +139,7 @@ void Drawer::draw_objects(){
 }
 
 void Drawer::clear_screen(uint32_t colour){
-    if (resizing || !running) return;
+    if (!running) return;
 #ifdef USING_OPENCL
         WGAERRCHECK(cl_draw_rect_px(0,0,render_state.width,render_state.height-1,colour));
 #else
@@ -207,20 +203,23 @@ Render_Matrix::Render_Matrix(float x_offset, float y_offset, float width, float 
 #ifdef USING_OPENCL // Using OpenCL to render
 
 wga_err Drawer::cl_resize(){
-    if (resizing || !running) return WGA_SUCCESS;
-    clFlush(queue);
-    cout << "RESIZE" << endl;
+    clFinish(queue);
+    clEnqueueUnmapMemObject(queue, src_buf, render_state.memory, 0, NULL, NULL);
     clReleaseMemObject(src_buf);
-    cout << "RESIZE" << endl;
     src_size = render_state.width*render_state.height;
     cl_int err;
     src_buf = clCreateBuffer(context, CL_MEM_HOST_READ_ONLY | CL_MEM_WRITE_ONLY, src_size * sizeof(cl_uint), NULL, &err);
     OCLCHECKERR("Failed to create source buffer on resize.",err);
+    render_state.memory = clEnqueueMapBuffer(queue, src_buf, CL_TRUE, CL_MAP_READ, 0, src_size * sizeof(cl_uint), 0, NULL, NULL, &err);
+    OCLCHECKERR("Failed to map reder state memory onto device source buffer.",err);
+    err = clSetKernelArg(draw_matrix_kernel, 2, sizeof(void*), (void*) &src_buf);
+    OCLCHECKERR("Failed to set matrix kernel argument src_buf.",err);
+    err = clSetKernelArg(draw_rect_kernel, 1, sizeof(void*), (void*) &src_buf);
+    OCLCHECKERR("Failed to set rect kernel argument src_buf.",err);
     return WGA_SUCCESS;
 }
 
 wga_err Drawer::cl_draw_rect_px(const int x0, const int y0, const int x1, const int y1,const uint32_t colour){
-    // return WGA_SUCCESS;
     cl_int err = 0;
 
     // Write parameters using buffer map
@@ -233,16 +232,12 @@ wga_err Drawer::cl_draw_rect_px(const int x0, const int y0, const int x1, const 
     rect_data[3] = (cl_uint)render_state.width-x1+x0;
     rect_data[4] = (cl_uint)colour;
     clEnqueueUnmapMemObject(queue, rect_data_buf, rect_data, 0, NULL, NULL);
-
     // Enqueue Kernel, also unmap src buf so it can me modified
     clEnqueueUnmapMemObject(queue, src_buf, render_state.memory, 0, NULL, NULL);
-
     OCLCHECK(clEnqueueNDRangeKernel(queue, draw_rect_kernel, 1, NULL, &global_work_size, &local_work_size, 0, NULL, NULL));
     clFinish(queue);
-
     render_state.memory = clEnqueueMapBuffer(queue, src_buf, CL_TRUE, CL_MAP_READ, 0, src_size * sizeof(cl_uint), 0, NULL, NULL, &err);
     OCLCHECKERR("Rect: Failed to map reder state memory onto device source buffer.",err);
-
     return WGA_SUCCESS;
 }
 

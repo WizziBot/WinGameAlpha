@@ -17,6 +17,7 @@ Render_State render_state;
 
 bool running = false;
 bool resizing = false;
+bool resized = false;
 
 LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
     LRESULT result = 0;
@@ -26,10 +27,10 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
             running = false;
         } break;
         case WM_SIZING: {
-            cout << "RESIZING EVENT" << endl;
             resizing = true;
         } break;
         case WM_SIZE: {
+            if (resizing) resized = true;
             resizing = false;
             RECT rect;
             GetClientRect(hWnd,&rect);
@@ -47,10 +48,6 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
 #endif
             render_state.bitmap_info.bmiHeader.biWidth = render_state.width;
             render_state.bitmap_info.bmiHeader.biHeight = render_state.height;
-            
-            // Render every window size update
-            // cout << "RESIZE EVENT" << endl;
-            if (running) render_update();
         } break;
 
         default: {
@@ -145,6 +142,10 @@ case vk:{ \
         }
 
         // Render every tick
+        if (resized){
+            render_update();
+            resized = false;
+        }
         render_tick(input,delta_time);
 
         // Overwrite screen buffer
