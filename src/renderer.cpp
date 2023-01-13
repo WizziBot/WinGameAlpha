@@ -40,11 +40,11 @@ Drawer::~Drawer(){
 #endif
 }
 
-wga_err Drawer::register_render_object(Render_Object* render_obj){
+wga_err Drawer::register_render_object(shared_ptr<Render_Object> render_obj){
     if (render_obj->m_render_layer > render_layers.size()){
         RNDERR("Render layers must be contiguous: invalid render layer id.");
     } else if (render_obj->m_render_layer == render_layers.size()){
-        vector<Render_Object*> render_objs;
+        vector<shared_ptr<Render_Object> > render_objs;
         render_objs.push_back(render_obj);
         render_layers.push_back(render_objs);
     } else {
@@ -61,16 +61,15 @@ void Drawer::draw_objects(){
     cl_event wait_for_draw;
 #endif
     clear_screen(m_background_colour);
-    vector<vector<Render_Object*> >::iterator layer;
+    vector<vector<shared_ptr<Render_Object> > >::iterator layer;
     shared_ptr<Render_Matrix> matrix;
     draw_pos offset;
     for (layer = render_layers.begin(); layer != render_layers.end(); layer++){
-        vector<Render_Object*>::iterator render_object;
+        vector<shared_ptr<Render_Object> >::iterator render_object;
         for (render_object = (*layer).begin(); render_object != (*layer).end(); render_object++){
             offset = (*render_object)->draw_get_pos();
 
             matrix = (*render_object)->m_render_matrix;
-
             float unit_size_x = matrix->m_unit_size_x;
             float unit_size_y = matrix->m_unit_size_y;
             float matrix_half_height = matrix->m_height/2;
@@ -191,7 +190,10 @@ void Drawer::cl_draw_finish(){
 Render_Object::Render_Object(shared_ptr<Drawer> drawer, shared_ptr<Render_Matrix> render_matrix, int render_layer, bool is_subclass)
 : m_render_layer(render_layer), m_render_matrix(render_matrix){
     if (render_matrix == NULL) throw std::invalid_argument("Renderer Error: The render matrix must not be null");
-    if (is_subclass) WGAERRCHECK(drawer->register_render_object(this));
+    if (is_subclass) {
+        shared_ptr<Render_Object> this_obj(this);
+        WGAERRCHECK(drawer->register_render_object(this_obj));
+    }
 }
 
 Render_Matrix::Render_Matrix(float x_offset, float y_offset, float width, float height, uint32_t* matrix, float unit_size_x, float unit_size_y)

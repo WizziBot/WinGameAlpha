@@ -85,11 +85,11 @@ private:
     @param render_obj a pointer to the render object
     @return WGA_SUCCESS on success and WGA_FAILURE on except
 */
-wga_err register_render_object(Render_Object* render_obj);
+wga_err register_render_object(shared_ptr<Render_Object> render_obj);
 /* Draw rectangle absolute (pixel) coordinates*/
 void draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour);
 uint32_t m_background_colour=0;
-vector<vector<Render_Object*> > render_layers;
+vector<vector<shared_ptr<Render_Object> > > render_layers;
 
 #ifdef USING_OPENCL
 cl_uint src_size;

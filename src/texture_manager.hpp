@@ -4,10 +4,6 @@
 
 namespace WinGameAlpha {
 
-class Render_Matrix;
-class Render_Object;
-class Drawer;
-
 class Texture_Manager {
 public:
 /* Manages and stores render objects and other textures

@@ -33,7 +33,9 @@ public:
     @param unit_size_y the height of each square unit in relative size
 */
 Render_Matrix(float x_offset, float y_offset, float width, float height, uint32_t* matrix, float unit_size_x, float unit_size_y);
-
+~Render_Matrix(){
+    // cout << "RM DEL " << m_matrix << endl;
+}
 void edit_matrix_offset(float x_offset, float y_offset){
     m_x_offset = x_offset;
     m_y_offset = y_offset;
@@ -72,7 +74,9 @@ public:
     @param is_subclass whether this is a subclass
 */
 Render_Object(shared_ptr<Drawer> drawer, shared_ptr<Render_Matrix> render_matrix, int render_layer, bool is_subclass);
-
+~Render_Object(){
+    // cout << "RO DEL " << m_render_layer << endl;
+}
 virtual draw_pos draw_get_pos(){
     draw_pos zero = {0,0};
     return zero;
