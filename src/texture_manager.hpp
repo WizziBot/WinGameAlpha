@@ -4,6 +4,7 @@
 
 namespace WinGameAlpha {
 
+
 class Texture_Manager {
 public:
 /* Manages and stores render objects and other textures
@@ -12,13 +13,13 @@ public:
 Texture_Manager(shared_ptr<Drawer> drawer){
     m_drawer = drawer;
 }
-/* Render object which contains rectangles to be rendered on each draw() call if registered (texture manager will register object)
+/* Render object which contains rectangles to be rendered on each draw() call if registered
     @param render_matrix a pointer to the render matrix texture
     @param render_layer the id of the render layer of the object where the render objects within the layer will be rendered together,
     the render layers must be declared contiguously i.e. layer 0 must exist before layer 1
     @return WGA_SUCCESS on succes and WGA_FAILURE on failure
 */
-wga_err create_render_object(shared_ptr<Render_Matrix> render_matrix, int render_layer);
+void create_render_object(shared_ptr<Render_Matrix> render_matrix, int render_layer);
 /* Render matrix is a matrix type texture
     @param x_offset the x_offset from the related object's coordinates
     @param y_offset the y_offset from the related object's coordinates
@@ -30,6 +31,8 @@ wga_err create_render_object(shared_ptr<Render_Matrix> render_matrix, int render
     @return A pointer to the created render matrix
 */
 shared_ptr<Render_Matrix> create_render_matrix(float x_offset, float y_offset, float width, float height, uint32_t* matrix, float unit_size_x, float unit_size_y);
+/* Register all non-subclass objects, must be called AFTER all objects are created, will cause memory errors otherwise. */
+wga_err register_all_objects();
 
 private:
 shared_ptr<Drawer> m_drawer;

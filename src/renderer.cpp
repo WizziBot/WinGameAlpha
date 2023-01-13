@@ -40,6 +40,13 @@ Drawer::~Drawer(){
 #endif
 }
 
+void Drawer::create_render_layers(int num_layers){
+    for (int i=0; i < num_layers; i++){
+        vector<shared_ptr<Render_Object> > render_objs;
+        render_layers.push_back(render_objs);
+    }
+}
+
 wga_err Drawer::register_render_object(shared_ptr<Render_Object> render_obj){
     if (render_obj->m_render_layer > render_layers.size()){
         RNDERR("Render layers must be contiguous: invalid render layer id.");

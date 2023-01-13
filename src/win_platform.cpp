@@ -36,7 +36,6 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
             GetClientRect(hWnd,&rect);
             render_state.width = rect.right - rect.left;
             render_state.height = rect.bottom - rect.top;
-            // cout << "ASSIGNING MEMORY" << endl;
 #ifndef USING_OPENCL
             int buffer_size = render_state.width*render_state.height*sizeof(uint32_t); //3 bytes for RGB and 1 byte padding
             if (render_state.memory) VirtualFree(render_state.memory,0,MEM_RELEASE);
@@ -44,7 +43,6 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
             if (render_state.memory == NULL){
                 std::cerr << "Memory assignment failure: Render state" << std::endl;
             }
-            // cout << "ASSIGNINED MEMORY" << endl;
 #endif
             render_state.bitmap_info.bmiHeader.biWidth = render_state.width;
             render_state.bitmap_info.bmiHeader.biHeight = render_state.height;
@@ -141,7 +139,8 @@ case vk:{ \
             }
         }
 
-        // Render every tick
+        Sleep(TICK_DELAY);
+
         if (resized){
             render_update();
             resized = false;
@@ -152,7 +151,6 @@ case vk:{ \
         if (render_state.memory){
             StretchDIBits(hdc, 0, 0, render_state.width, render_state.height, 0, 0, render_state.width, render_state.height, render_state.memory, &render_state.bitmap_info, DIB_RGB_COLORS, SRCCOPY);
         }
-        Sleep(TICK_DELAY);
 
         // SPF calculation
         QueryPerformanceCounter(&frame_end_time);
