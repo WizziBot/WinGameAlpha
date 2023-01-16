@@ -72,11 +72,12 @@ void render_init(){
         .half_width = ARENA_R,
         .half_height = ARENA_U
     };
-
+    // made a function to pre-implement layers to avoid contiguity errors, might need it later
     shared_ptr<Render_Matrix> player_render_matrix = texture_manager->create_render_matrix(0,0,1,5,player_matrix,P_HEIGHT/5,P_HEIGHT/5);
     shared_ptr<Render_Matrix> ball_render_matrix = texture_manager->create_render_matrix(0,0,1,1,ball_matrix,B_DIAMETER,B_DIAMETER);
     shared_ptr<Render_Matrix> arena_render_matrix = texture_manager->create_render_matrix(0,0,1,1,arena_matrix,ARENA_R*2,ARENA_U*2);
-    WGAERRCHECK(texture_manager->create_render_object(arena_render_matrix,ARENA_RENDER_LAYER));
+    texture_manager->create_render_object(arena_render_matrix,ARENA_RENDER_LAYER);
+    texture_manager->register_all_objects();
     
     Collider_Boundary arena_bound(0, 0, arena_aabb, BOUND_TOP | BOUND_BOTTOM);
     bounds.push_back(arena_bound);

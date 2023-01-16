@@ -76,7 +76,10 @@ void cl_draw_finish();
 wga_err cl_resize();
 /* Set background to be coloured*/
 void set_background_colour(uint32_t colour);
-
+/* Setup render layers 
+    @param num_layers number of layers to template such that they can be filled with render objects
+*/
+void create_render_layers(int num_layers);
 private:
 
 /* Creates a render object and registers it with the drawer. Gets rendered every call to draw().
