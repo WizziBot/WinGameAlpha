@@ -3,11 +3,11 @@
 
 #define WGAERRCHECK(func) if (func != WGA_SUCCESS) {\
                             running = false;\
-                            std::cout << "WinGameAlpha Error at\n" \
+                            std::cerr << "WinGameAlpha Error at\n" \
                             << #func << std::endl;}
 #define WGACHECKERRNO(msg,err_no) if (err_no != WGA_SUCCESS) {\
                             running = false;\
-                            std::cout << "WinGameAlpha Error:" \
+                            std::cerr << "WinGameAlpha Error:" \
                             << msg << std::endl;}
 
 namespace WinGameAlpha{

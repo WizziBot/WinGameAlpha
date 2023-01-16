@@ -16,19 +16,19 @@
 #include <CL/cl.h>
 #define MATRIX_DATA_BUF_SIZE 10
 #define RECT_DATA_BUF_SIZE 5
-#define OCLERR(msg) {cout << "OpenCL Error: " << msg << endl; \
+#define OCLERR(msg) {cerr << "OpenCL Error: " << msg << endl; \
                     return WGA_FAILURE;}
 
 #ifdef OCL_ERROR_CHECKING
-#define OCLCHECK(arg) if ((err = arg) != CL_SUCCESS) { cout << "OpenCL Internal Error: Code(" << err << ")\n" \
+#define OCLCHECK(arg) if ((err = arg) != CL_SUCCESS) { cerr << "OpenCL Internal Error: Code(" << err << ")\n" \
                       << #arg << endl; \
                       return WGA_FAILURE;}
-#define OCLCHECKERR(msg,err_no) if (err_no != CL_SUCCESS) { cout << "OpenCL Internal Error: "<< msg <<" Code(" << err_no << ")" << endl; \
+#define OCLCHECKERR(msg,err_no) if (err_no != CL_SUCCESS) { cerr << "OpenCL Internal Error: "<< msg <<" Code(" << err_no << ")" << endl; \
                       return WGA_FAILURE;}
-#define OCLEX(arg) if ((err = arg) != CL_SUCCESS) { cout << "OpenCL Internal Error: Code(" << err << ")\n" \
+#define OCLEX(arg) if ((err = arg) != CL_SUCCESS) { cerr << "OpenCL Internal Error: Code(" << err << ")\n" \
                       << #arg << endl;\
                       throw std::invalid_argument("OPENCLERR");}
-#define OCLEXERR(msg,err_no) if (err_no != CL_SUCCESS) { cout << "OpenCL Internal Error: "<< msg <<" Code(" << err_no << ")" << endl; \
+#define OCLEXERR(msg,err_no) if (err_no != CL_SUCCESS) { cerr << "OpenCL Internal Error: "<< msg <<" Code(" << err_no << ")" << endl; \
                       throw std::invalid_argument("OPENCLERR");}
 
 #else
