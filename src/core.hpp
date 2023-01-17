@@ -3,9 +3,11 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <string>
 
 using std::shared_ptr;
 using std::make_shared;
+using std::string;
 
 // Enable OpenCL
 // #define USING_OPENCL

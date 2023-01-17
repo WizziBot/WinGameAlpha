@@ -23,6 +23,9 @@ shared_ptr<Player> player2;
 shared_ptr<Ball> ball;
 vector<Collider_Boundary> bounds;
 
+shared_ptr<uint32_t> player1_m;
+shared_ptr<uint32_t> player2_m;
+
 #ifdef DEBUG_INFO
 LARGE_INTEGER time1, time2, end_time;
 float time_diff_other = 0.f;
@@ -73,7 +76,7 @@ void render_init(){
         .half_height = ARENA_U
     };
 
-    
+    //Load textures
 
     // made a function to pre-implement layers to avoid contiguity errors, might need it later
     shared_ptr<Render_Matrix> player_render_matrix = texture_manager->create_render_matrix(0,0,1,5,dplayer_matrix,P_HEIGHT/5,P_HEIGHT/5);
