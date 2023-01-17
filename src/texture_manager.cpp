@@ -23,20 +23,22 @@ wga_err Texture_Manager::register_all_objects(){
     return WGA_SUCCESS;
 }
 
-wga_err Texture_Manager::load_texture(uint32_t** matrix_dst, int* width, int* height, const char* file_name){
+wga_err Texture_Manager::load_texture(uint32_t** matrix_dst, int* width, int* height, float* unit_size, string file_name){
     wga_err err;
-    FILE* fd = fopen(file_name,"r");
+    FILE* fd = fopen(file_name.c_str(),"r");
     if (fd == NULL) {return WGA_FAILURE;}
-    int _width,_height;
+    int _width,_height,_unit_size;
     int read = fread(&_width,sizeof(int),1,fd);
     read += fread(&_height,sizeof(int),1,fd);
+    read += fread(&_unit_size,sizeof(float),1,fd);
     uint32_t* matrix = (uint32_t*)VirtualAlloc(0,_width*_height*sizeof(uint32_t), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     read += fread(matrix,sizeof(uint32_t),_width*_height,fd);
-    if (read == _width*_height + 2) err = WGA_SUCCESS;
+    if (read == _width*_height + 3) err = WGA_SUCCESS;
     else err = WGA_FAILURE;
     fclose(fd);
     *width = _width;
     *height = _height;
+    *unit_size = _unit_size;
     *matrix_dst = matrix;
     return err;
 }
