@@ -7,7 +7,7 @@
                             << #func << std::endl;}
 #define WGACHECKERRNO(msg,err_no) if (err_no != WGA_SUCCESS) {\
                             running = false;\
-                            std::cerr << "WinGameAlpha Error:" \
+                            std::cerr << "WinGameAlpha Error: " \
                             << msg << std::endl;}
 
 namespace WinGameAlpha{
