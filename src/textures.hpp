@@ -9,8 +9,10 @@
 
 namespace WinGameAlpha {
 
+// Default textures
+
 // notice that player collider height will need to be adjusted to this
-uint32_t player_matrix[] {
+uint32_t dplayer_matrix[] {
     0xff0000,
     0xff0000,
     0xff0000,
@@ -18,10 +20,10 @@ uint32_t player_matrix[] {
     0xff0000
 };
 // single square matrices
-uint32_t ball_matrix[] {
+uint32_t dball_matrix[] {
     B_COLOUR
 };
-uint32_t arena_matrix[] {
+uint32_t darena_matrix[] {
     ARENA_COLOUR
 };
 
