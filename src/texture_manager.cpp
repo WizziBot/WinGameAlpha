@@ -3,6 +3,12 @@
 
 namespace WinGameAlpha {
 
+Texture_Manager::~Texture_Manager(){
+    for (auto p : m_matrices){
+        VirtualFree(p,0,MEM_RELEASE);
+    }
+}
+
 void Texture_Manager::create_render_object(shared_ptr<Render_Matrix> render_matrix, int render_layer){
     render_objects.push_back(Render_Object(m_drawer,render_matrix,render_layer,false));
 }
@@ -40,7 +46,25 @@ wga_err Texture_Manager::load_texture(uint32_t** matrix_dst, int* width, int* he
     *height = _height;
     *unit_size = _unit_size;
     *matrix_dst = matrix;
+    m_matrices.push_back(matrix);
     return err;
+}
+
+static inline void flip_array(shared_ptr<uint32_t> sh_matrix, int start, int end){
+    uint32_t temp;
+    int i,j;
+    uint32_t* matrix = sh_matrix.get();
+    for (i = start, j = end; i < (end-start)/2; i++, j--) {
+        temp = matrix[i];
+        matrix[i] = matrix[j];
+        matrix[j] = temp;
+    }  
+}
+
+void Texture_Manager::flip_matrix(shared_ptr<uint32_t> matrix, int width, int height){
+    for (int y=0; y<=height; y++){
+        flip_array(matrix,y*width,y*width+width);
+    }
 }
 
 }

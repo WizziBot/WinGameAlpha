@@ -13,6 +13,7 @@ public:
 Texture_Manager(shared_ptr<Drawer> drawer){
     m_drawer = drawer;
 }
+~Texture_Manager();
 /* Render object which contains rectangles to be rendered on each draw() call if registered
     @param render_matrix a pointer to the render matrix texture
     @param render_layer the id of the render layer of the object where the render objects within the layer will be rendered together,
@@ -41,10 +42,13 @@ wga_err register_all_objects();
     @param unit_size a pointer to where the unit size will be stored
     @param file_name the name of the file
 */
-static wga_err load_texture(uint32_t** matrix_dst, int* width, int* height, float* unit_size, string file_name);
+wga_err load_texture(uint32_t** matrix_dst, int* width, int* height, float* unit_size, string file_name);
+
+static void flip_matrix(shared_ptr<uint32_t> matrix, int width, int height);
 
 private:
 shared_ptr<Drawer> m_drawer;
+vector<uint32_t*> m_matrices;
 vector<Render_Object> render_objects;
 vector<shared_ptr<Render_Matrix>> render_matrices;
 };

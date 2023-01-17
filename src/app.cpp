@@ -23,9 +23,6 @@ shared_ptr<Player> player2;
 shared_ptr<Ball> ball;
 vector<Collider_Boundary> bounds;
 
-shared_ptr<uint32_t> player1_m;
-shared_ptr<uint32_t> player2_m;
-
 #ifdef DEBUG_INFO
 LARGE_INTEGER time1, time2, end_time;
 float time_diff_other = 0.f;
@@ -75,16 +72,32 @@ void render_init(){
         .half_width = ARENA_R,
         .half_height = ARENA_U
     };
-
+    cout << "HHH" << endl;
     //Load textures
+    int width=1,height=5;
+    float unit_size = P_HEIGHT/5;
+    uint32_t* temp_m;
+    err = texture_manager->load_texture(&temp_m,&width,&height,&unit_size,"./textures/player.wgat");
+    uint32_t* player_matrix = dplayer_matrix;
+    if (err == WGA_SUCCESS) {
+        player_matrix = temp_m;
+    }
+    // width=1,height=1;
+    // unit_size = B_DIAMETER;
+    // err = texture_manager->load_texture(player1_m,&width,&height,&unit_size,"textures/player.wgat");
+    // uint32_t* ball_matrix = dball_matrix;
+    // if (err == WGA_SUCCESS) player_matrix = ball_m.get();
+    // width=1,height=1;
+
+
 
     // made a function to pre-implement layers to avoid contiguity errors, might need it later
-    shared_ptr<Render_Matrix> player_render_matrix = texture_manager->create_render_matrix(0,0,1,5,dplayer_matrix,P_HEIGHT/5,P_HEIGHT/5);
+    shared_ptr<Render_Matrix> player_render_matrix = texture_manager->create_render_matrix(0,0,width,height,player_matrix,P_HEIGHT/5,P_HEIGHT/5);
     shared_ptr<Render_Matrix> ball_render_matrix = texture_manager->create_render_matrix(0,0,1,1,dball_matrix,B_DIAMETER,B_DIAMETER);
     shared_ptr<Render_Matrix> arena_render_matrix = texture_manager->create_render_matrix(0,0,1,1,darena_matrix,ARENA_R*2,ARENA_U*2);
     texture_manager->create_render_object(arena_render_matrix,ARENA_RENDER_LAYER);
     texture_manager->register_all_objects();
-    
+    cout << "BBB" << endl;
     Collider_Boundary arena_bound(0, 0, arena_aabb, BOUND_TOP | BOUND_BOTTOM);
     bounds.push_back(arena_bound);
     // register the arena bounds
