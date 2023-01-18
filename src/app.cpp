@@ -61,43 +61,64 @@ void render_init(){
         .dx = B_INIT_SPEED
     };
     aabb_bounds player_aabb = {
-        .half_width = P_WIDTH/2,
-        .half_height = P_HEIGHT/2
+        .half_width = (float)P_WIDTH/2.f,
+        .half_height = (float)P_HEIGHT/2.f
     };
     aabb_bounds ball_aabb = {
-        .half_width = B_DIAMETER/2,
-        .half_height = B_DIAMETER/2
+        .half_width = (float)B_DIAMETER/2.f,
+        .half_height = (float)B_DIAMETER/2.f
     };
     aabb_bounds arena_aabb = {
-        .half_width = ARENA_R,
-        .half_height = ARENA_U
+        .half_width = (float)ARENA_R,
+        .half_height = (float)ARENA_U
     };
-    cout << "HHH" << endl;
-    //Load textures
-    int width=1,height=5;
-    float unit_size = P_HEIGHT/5;
+
+    // Load textures
+    int width,height;
+    float unit_size;
     uint32_t* temp_m;
+
+    // Players
     err = texture_manager->load_texture(&temp_m,&width,&height,&unit_size,"./textures/player.wgat");
-    uint32_t* player_matrix = dplayer_matrix;
-    if (err == WGA_SUCCESS) {
-        player_matrix = temp_m;
+    if (err == WGA_FAILURE) {
+        temp_m = dplayer_matrix;
+        width=1,height=5;
+        unit_size = P_HEIGHT/5;
+    } else {
+        texture_manager->rotate_matrix(temp_m,&width,&height,1);
     }
-    // width=1,height=1;
-    // unit_size = B_DIAMETER;
-    // err = texture_manager->load_texture(player1_m,&width,&height,&unit_size,"textures/player.wgat");
-    // uint32_t* ball_matrix = dball_matrix;
-    // if (err == WGA_SUCCESS) player_matrix = ball_m.get();
-    // width=1,height=1;
-
-
-
-    // made a function to pre-implement layers to avoid contiguity errors, might need it later
-    shared_ptr<Render_Matrix> player_render_matrix = texture_manager->create_render_matrix(0,0,width,height,player_matrix,P_HEIGHT/5,P_HEIGHT/5);
-    shared_ptr<Render_Matrix> ball_render_matrix = texture_manager->create_render_matrix(0,0,1,1,dball_matrix,B_DIAMETER,B_DIAMETER);
-    shared_ptr<Render_Matrix> arena_render_matrix = texture_manager->create_render_matrix(0,0,1,1,darena_matrix,ARENA_R*2,ARENA_U*2);
+    shared_ptr<Render_Matrix> player1_render_matrix = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
+    err = texture_manager->load_texture(&temp_m,&width,&height,&unit_size,"./textures/player.wgat");
+    if (err == WGA_FAILURE) {
+        temp_m = dplayer_matrix;
+        width=1,height=5;
+        unit_size = P_HEIGHT/5;
+    } else {
+        texture_manager->rotate_matrix(temp_m,&width,&height,1);
+        texture_manager->flip_matrix(temp_m,width,height);
+    }
+    shared_ptr<Render_Matrix> player2_render_matrix = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
+    
+    // Ball
+    err = texture_manager->load_texture(&temp_m,&width,&height,&unit_size,"./textures/ball.wgat");
+    if (err == WGA_FAILURE) {
+        temp_m = dball_matrix;
+        width=1,height=1;
+        unit_size = B_DIAMETER;
+    }
+    shared_ptr<Render_Matrix> ball_render_matrix = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
+    
+    // Arena
+    err = texture_manager->load_texture(&temp_m,&width,&height,&unit_size,"./textures/arena.wgat");
+    if (err == WGA_FAILURE) {
+        temp_m = darena_matrix;
+        width=1,height=1;
+        unit_size = ARENA_R*2;
+    }
+    shared_ptr<Render_Matrix> arena_render_matrix = texture_manager->create_render_matrix(0,0,width,height,darena_matrix,unit_size,unit_size);
     texture_manager->create_render_object(arena_render_matrix,ARENA_RENDER_LAYER);
     texture_manager->register_all_objects();
-    cout << "BBB" << endl;
+
     Collider_Boundary arena_bound(0, 0, arena_aabb, BOUND_TOP | BOUND_BOTTOM);
     bounds.push_back(arena_bound);
     // register the arena bounds
@@ -105,10 +126,10 @@ void render_init(){
     for (bound = bounds.begin(); bound != bounds.end(); bound++){
         physics->register_collider_boundary(ARENA_COLLISION_GROUP,bound.base());
     }
-    vector<int> player_targets(1,ARENA_COLLISION_GROUP);
+    vector<int> player_targets(1,ARENA_COLLISION_GROUP); player_targets.push_back(B_COLLISION_GROUP);
     vector<int> ball_targets; ball_targets.push_back(ARENA_COLLISION_GROUP); ball_targets.push_back(P_COLLISION_GROUP);
-    player1 = make_shared<Player>(physics, drawer, &player1_init, P_COLLISION_GROUP, player_targets, &player_aabb, player_render_matrix, P_B_RENDER_LAYER);
-    player2 = make_shared<Player>(physics, drawer, &player2_init, P_COLLISION_GROUP, player_targets, &player_aabb, player_render_matrix, P_B_RENDER_LAYER);
+    player1 = make_shared<Player>(physics, drawer, &player1_init, P_COLLISION_GROUP, player_targets, &player_aabb, player1_render_matrix, P_B_RENDER_LAYER);
+    player2 = make_shared<Player>(physics, drawer, &player2_init, P_COLLISION_GROUP, player_targets, &player_aabb, player2_render_matrix, P_B_RENDER_LAYER);
     ball = make_shared<Ball>(physics, drawer, &ball_init, B_COLLISION_GROUP, ball_targets, &ball_aabb, ball_render_matrix, P_B_RENDER_LAYER);
     
     drawer->set_background_colour(BACKGROUND_COLOUR);
