@@ -33,7 +33,8 @@ wga_err Texture_Manager::load_texture(uint32_t** matrix_dst, int* width, int* he
     wga_err err;
     FILE* fd = fopen(file_name.c_str(),"r");
     if (fd == NULL) {return WGA_FAILURE;}
-    int _width,_height,_unit_size;
+    int _width,_height;
+    float _unit_size;
     int read = fread(&_width,sizeof(int),1,fd);
     read += fread(&_height,sizeof(int),1,fd);
     read += fread(&_unit_size,sizeof(float),1,fd);
