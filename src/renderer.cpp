@@ -40,13 +40,6 @@ Drawer::~Drawer(){
 #endif
 }
 
-void Drawer::create_render_layers(int num_layers){
-    for (int i=0; i < num_layers; i++){
-        vector<shared_ptr<Render_Object> > render_objs;
-        render_layers.push_back(render_objs);
-    }
-}
-
 wga_err Drawer::register_render_object(shared_ptr<Render_Object> render_obj){
     if (render_obj->m_render_layer > render_layers.size()){
         RNDERR("Render layers must be contiguous: invalid render layer id.");
@@ -68,6 +61,9 @@ void Drawer::draw_objects(){
     cl_event wait_for_draw;
 #endif
     clear_screen(m_background_colour);
+    float rh = (float)render_state.height;
+    float rw = (float)render_state.width;
+    float factor = (float)render_state.height/100.f;
     vector<vector<shared_ptr<Render_Object> > >::iterator layer;
     shared_ptr<Render_Matrix> matrix;
     draw_pos offset;
@@ -75,22 +71,18 @@ void Drawer::draw_objects(){
         vector<shared_ptr<Render_Object> >::iterator render_object;
         for (render_object = (*layer).begin(); render_object != (*layer).end(); render_object++){
             offset = (*render_object)->draw_get_pos();
-
+            
             matrix = (*render_object)->m_render_matrix;
-            float unit_size_x = matrix->m_unit_size_x;
-            float unit_size_y = matrix->m_unit_size_y;
-            float matrix_half_height = matrix->m_height/2;
-            float matrix_half_width = matrix->m_width/2;
-            float square_x_init = offset.x - matrix_half_width*unit_size_x + unit_size_x/2;
-            float square_y_init = offset.y - matrix_half_height*unit_size_y + unit_size_y/2;
-            int unit_size_x_px = floor(render_state.height*(unit_size_x/100.f));
-            int unit_size_y_px = floor(render_state.height*(unit_size_y/100.f));
-            int x0_i = floor(render_state.height*(square_x_init/100) - render_state.height*(unit_size_x/200.f) + render_state.width/2.f);
-            int x1_i = floor(render_state.height*(square_x_init/100) + render_state.height*(unit_size_x/200.f) + render_state.width/2.f);
+            int unit_size_x_px = floor(matrix->m_unit_size_x*factor);
+            int unit_size_y_px = floor(matrix->m_unit_size_y*factor);
+            int matrix_width = (int)matrix->m_width*unit_size_x_px;
+            int matrix_height = (int)matrix->m_height*unit_size_y_px;
+            int x0_i = render_state.width/2 + floor((offset.x + matrix->m_x_offset)*factor) - matrix_width/2;
+            int x1_i = render_state.width/2 + floor((offset.x + matrix->m_x_offset)*factor) - matrix_width/2 + unit_size_x_px;
             int x0 = x0_i;
             int x1 = x1_i;
-            int y0 = floor(render_state.height*(square_y_init/100) - render_state.height*(unit_size_y/200.f) + render_state.height/2.f);
-            int y1 = floor(render_state.height*(square_y_init/100) + render_state.height*(unit_size_y/200.f) + render_state.height/2.f);
+            int y0 = render_state.height/2 + floor((offset.y + matrix->m_y_offset)*factor) - matrix_height/2;
+            int y1 = render_state.height/2 + floor((offset.y + matrix->m_y_offset)*factor) - matrix_height/2 + unit_size_y_px;
             
 #ifdef USING_OPENCL
             x0 = clamp(0, x0, render_state.width);
@@ -120,15 +112,21 @@ void Drawer::draw_objects(){
             OCLEX(clEnqueueNDRangeKernel(queue, draw_matrix_kernel, 1, NULL, &global_work_size, &local_work_size, 0, NULL, &wait_for_draw));
 
 #else
+            int mw = (int)matrix->m_width, mh = (int)matrix->m_height;
             uint32_t* unit_col = matrix->m_matrix;
-            for (int y = 0; y < matrix->m_height; y++){
-                for (int x = 0; x < matrix->m_width; x++){
-                    if (!((*unit_col) & ALPHA_BIT))
+            int x,y; 
+            for (y = 0; y < mh; y++){
+                for (x = 0; x < mw; x++){
+                    if (!((*unit_col) & ALPHA_BIT)){
                         draw_rect_px(x0,y0,x1,y1,*unit_col);
+                    }
+                    // ((uint32_t*)render_state.memory)[x0 + y0*render_state.width] = 0; //dot grid to implement somehow in the future
+                    // ((uint32_t*)render_state.memory)[x1 + y1*render_state.width] = 0;
                     x0 += unit_size_x_px;
                     x1 += unit_size_x_px;
                     unit_col++;
                 }
+
                 y0 += unit_size_y_px;
                 y1 += unit_size_y_px;
                 x0 = x0_i;
@@ -195,8 +193,9 @@ void Drawer::cl_draw_finish(){
 }
 
 Render_Object::Render_Object(shared_ptr<Drawer> drawer, shared_ptr<Render_Matrix> render_matrix, int render_layer, bool is_subclass)
-: m_render_layer(render_layer), m_render_matrix(render_matrix){
+: m_render_layer(render_layer){
     if (render_matrix == NULL) throw std::invalid_argument("Renderer Error: The render matrix must not be null");
+    m_render_matrix = render_matrix;
     if (is_subclass) {
         shared_ptr<Render_Object> this_obj(this);
         WGAERRCHECK(drawer->register_render_object(this_obj));

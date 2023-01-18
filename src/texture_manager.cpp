@@ -33,7 +33,8 @@ wga_err Texture_Manager::load_texture(uint32_t** matrix_dst, int* width, int* he
     wga_err err;
     FILE* fd = fopen(file_name.c_str(),"r");
     if (fd == NULL) {return WGA_FAILURE;}
-    int _width,_height,_unit_size;
+    int _width,_height;
+    float _unit_size;
     int read = fread(&_width,sizeof(int),1,fd);
     read += fread(&_height,sizeof(int),1,fd);
     read += fread(&_unit_size,sizeof(float),1,fd);
@@ -50,21 +51,41 @@ wga_err Texture_Manager::load_texture(uint32_t** matrix_dst, int* width, int* he
     return err;
 }
 
-static inline void flip_array(shared_ptr<uint32_t> sh_matrix, int start, int end){
+static inline void flip_array(uint32_t* matrix, int start, int end){
     uint32_t temp;
-    int i,j;
-    uint32_t* matrix = sh_matrix.get();
-    for (i = start, j = end; i < (end-start)/2; i++, j--) {
+    int i,j,u;
+    for (i = start, j = end-1, u = 0; u < (end-start)/2; i++, j--, u++) {
         temp = matrix[i];
         matrix[i] = matrix[j];
         matrix[j] = temp;
     }  
 }
 
-void Texture_Manager::flip_matrix(shared_ptr<uint32_t> matrix, int width, int height){
-    for (int y=0; y<=height; y++){
+void Texture_Manager::flip_matrix(uint32_t* matrix, int width, int height){
+    for (int y=0; y < height; y++){
         flip_array(matrix,y*width,y*width+width);
     }
+}
+
+void Texture_Manager::rotate_matrix(uint32_t* matrix, int* width, int* height, int n_rotations){
+    int _width=*width,_height=*height;
+    int temp;
+    uint32_t* temp_matrix = (uint32_t*)VirtualAlloc(0,_width*_height*sizeof(uint32_t), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    for (int i=0; i < n_rotations; i++){
+        uint32_t* unit = temp_matrix;
+        for (int x=0; x < _width; x++){
+            for (int y=0; y < _height; y++){
+                *unit++ = matrix[x + y*_width];
+            }
+        }
+        temp = _width;
+        _width = _height;
+        _height = temp;
+        memcpy(matrix,temp_matrix,sizeof(uint32_t)*_width*_height);
+    }
+    *width = _width;
+    *height = _height;
+    VirtualFree(temp_matrix,0,MEM_RELEASE);
 }
 
 }

@@ -44,7 +44,10 @@ wga_err register_all_objects();
 */
 wga_err load_texture(uint32_t** matrix_dst, int* width, int* height, float* unit_size, string file_name);
 
-static void flip_matrix(shared_ptr<uint32_t> matrix, int width, int height);
+/* Flip matrix horizontally */
+static void flip_matrix(uint32_t* matrix, int width, int height);
+/* Rotate matrix 90 degrees clockwise (transpose and flip) */
+static void rotate_matrix(uint32_t* matrix, int* width, int* height, int n_rotations);
 
 private:
 shared_ptr<Drawer> m_drawer;
