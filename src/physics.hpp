@@ -5,9 +5,11 @@
 
 #define P_SPEED 50.f
 #define P_ACCELERATION 500
+#define B_ACCELERATION 1000
 #define B_Y_SPEED 20.f
 #define B_INIT_SPEED 40.f
 #define P_DRAG .05f
+#define B_DRAG .01f
 
 #define BOUND_TOP (1<<0)
 #define BOUND_BOTTOM (1<<1)
@@ -173,7 +175,7 @@ virtual void tick(float dt){};
 /* Called when a collision is detected 
     @param other_type the type of collider the object has collided with
 */
-virtual void onCollision(const collider_type other_type, void* other_collider_ptr, bound_flags active_flags){};
+virtual void onCollision(const collider_type other_type, void* other_collider_ptr, bound_flags active_flags, int other_collider_group){};
 
 shared_ptr<Collider> getCollider(){
     return m_collider;

@@ -115,7 +115,7 @@ void Entity_Physics::process_collisions(){
                             out_flag = BOUND_RIGHT;
                             if (hard_collision) (*kobj)->m_posX = kobj_otherX - collider1.half_width - collider2.half_width;
                         }
-                        (*kobj)->onCollision(OBJECT_COLLIDER,(void*)kobj_other.base(),out_flag);
+                        (*kobj)->onCollision(OBJECT_COLLIDER,(void*)kobj_other.base(),out_flag,*target_group_id);
                     }
                 }
                 for (bound = (*target_group).bounds.begin(); bound != (*target_group).bounds.end(); bound++){
@@ -144,7 +144,7 @@ void Entity_Physics::process_collisions(){
                         collided = true;
                     }
                     if (collided){
-                        (*kobj)->onCollision(COLLIDER_BOUNDARY,(void*)bound.base(),out_flag);
+                        (*kobj)->onCollision(COLLIDER_BOUNDARY,(void*)bound.base(),out_flag,*target_group_id);
                     }
                 }
             }
