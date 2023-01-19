@@ -19,6 +19,42 @@ bool running = false;
 bool resizing = false;
 bool resized = false;
 
+BOOL WindowResize(HWND hWnd, WPARAM wParam, LPARAM lParam)
+{
+    int width = LOWORD(lParam);
+    int height = HIWORD(lParam);
+
+    if (width < (height * W_WIDTH) / W_HEIGHT) {
+        // Calculate correct aspect ratio size
+        width = (height * W_WIDTH) / W_HEIGHT;
+        SetWindowPos(hWnd, NULL, 0, 0,
+                     width, height,
+                     SWP_NOMOVE | SWP_NOZORDER);
+    }
+    
+    return true;
+}
+
+BOOL WindowResizing(HWND hWnd, WPARAM wParam, LPARAM lParam)
+{
+    PRECT rectp = (PRECT)lParam;
+
+    RECT rect;
+    GetClientRect(hWnd, &rect);
+
+    int width  = W_WIDTH ;
+    int height = W_HEIGHT;
+
+    // Minimum size
+    if (rectp->right - rectp->left < width)
+	rectp->right = rectp->left + width;
+
+    if (rectp->bottom - rectp->top < height)
+	rectp->bottom = rectp->top + height;
+
+    return true;
+}
+
 LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
     LRESULT result = 0;
     switch(Msg){
@@ -27,9 +63,17 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
             running = false;
         } break;
         case WM_SIZING: {
+            if (!WindowResizing(hWnd,wParam,lParam)){
+                running = false;
+                break;
+            }
             resizing = true;
         } break;
         case WM_SIZE: {
+            if (!WindowResize(hWnd,wParam,lParam)) {
+                running = false;
+                break;
+            }
             if (resizing) resized = true;
             resizing = false;
             RECT rect;
