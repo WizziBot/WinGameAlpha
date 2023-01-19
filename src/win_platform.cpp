@@ -130,7 +130,7 @@ case vk:{ \
                         break;
                         switch_btn(BUTTON_KRIGHT,VK_RIGHT)
                         break;
-                        switch_btn(BUTTON_START,VK_P)
+                        switch_btn(BUTTON_PAUSE,VK_ESCAPE)
                         break;
                     }
                 }break;

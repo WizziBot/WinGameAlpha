@@ -162,18 +162,17 @@ void render_tick(Input& input, float dt){
 #endif
 
     // Barrier for play button
-    if (!run_game){
-        if (btn_pressed(BUTTON_START)) run_game = true;
-        else return;
+    if (btn_pressed(BUTTON_PAUSE)) run_game = !run_game;
+
+    if (run_game){
+        // Set acceleration
+        if (btn_down(BUTTON_UP)) player1->accelerate(ACC_UP);
+        if (btn_down(BUTTON_DOWN)) player1->accelerate(ACC_DOWN);
+        if (btn_down(BUTTON_KUP)) player2->accelerate(ACC_UP);
+        if (btn_down(BUTTON_KDOWN)) player2->accelerate(ACC_DOWN);
+
+        physics->physics_tick(dt);
     }
-
-    // Set acceleration
-    if (btn_down(BUTTON_UP)) player1->accelerate(ACC_UP);
-    if (btn_down(BUTTON_DOWN)) player1->accelerate(ACC_DOWN);
-    if (btn_down(BUTTON_KUP)) player2->accelerate(ACC_UP);
-    if (btn_down(BUTTON_KDOWN)) player2->accelerate(ACC_DOWN);
-
-    physics->physics_tick(dt);
     
 #ifdef DEBUG_INFO
     QueryPerformanceCounter(&time2);
