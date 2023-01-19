@@ -28,7 +28,9 @@ __kernel void draw_matrix_kernel(const __global uint *matrix_data,
     int stride_cutoff;
     while (idx<maxid){
         matrix_idx = ((idx%buffer_width)-x0)/(unit_width) + (((idx/buffer_width) - y0)/(unit_height))*width;
-        buffer[idx] = matrix_buffer[matrix_idx];
+        if (matrix_buffer[matrix_idx] != 0x80000000){
+            buffer[idx] = matrix_buffer[matrix_idx];
+        }
         idx = minid + gid + stride*i + ((gid+stride*i)/(width*unit_width)) * wrap_step;
         i++;
     }

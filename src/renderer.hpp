@@ -144,7 +144,9 @@ const char *kernel_source = \
     int matrix_idx;\n\
     while (idx<maxid){\n\
         matrix_idx = ((idx%buffer_width)-x0)/(unit_width) + (((idx/buffer_width) - y0)/(unit_height))*width;\n\
-        buffer[idx] = matrix_buffer[matrix_idx];\n\
+        if (matrix_buffer[matrix_idx] != 0x80000000){\n\
+            buffer[idx] = matrix_buffer[matrix_idx];\n\
+        }\n\
         idx = minid + gid + stride*i + ((gid+stride*i)/(width*unit_width)) * wrap_step;\n\
         i++;\n\
     }\n\
