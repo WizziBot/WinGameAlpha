@@ -26,8 +26,8 @@ void Ball::onCollision(const collider_type other_type, void* other_collider_ptr,
         if (active_flags & (BOUND_TOP | BOUND_BOTTOM)) m_dy *= -1;
         if (active_flags & (BOUND_LEFT | BOUND_RIGHT)) {
             m_dx *= -1;
-            if (active_flags & BOUND_LEFT) m_ddx = B_ACCELERATION, m_dx += 5;
-            else m_ddx = -B_ACCELERATION, m_dx -= 5;
+            if (active_flags & BOUND_LEFT) m_ddx = B_ACCELERATION, m_dx = B_INIT_SPEED + 5;
+            else m_ddx = -B_ACCELERATION, m_dx = -B_INIT_SPEED - 5;
             boost_timer = 0.2f;
         }
     }

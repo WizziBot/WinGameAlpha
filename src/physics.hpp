@@ -9,7 +9,7 @@
 #define B_Y_SPEED 20.f
 #define B_INIT_SPEED 40.f
 #define P_DRAG .05f
-#define B_DRAG .01f
+#define B_DRAG .015f
 
 #define BOUND_TOP (1<<0)
 #define BOUND_BOTTOM (1<<1)
