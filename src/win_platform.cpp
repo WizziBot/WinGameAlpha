@@ -130,6 +130,8 @@ case vk:{ \
                         break;
                         switch_btn(BUTTON_KRIGHT,VK_RIGHT)
                         break;
+                        switch_btn(BUTTON_START,VK_P)
+                        break;
                     }
                 }break;
                 default: {

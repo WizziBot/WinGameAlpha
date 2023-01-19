@@ -14,6 +14,7 @@ namespace WinGameAlpha {
 
 // Globals
 extern bool running;
+bool run_game = false;
 
 shared_ptr<Drawer> drawer;
 shared_ptr<Texture_Manager> texture_manager;
@@ -76,6 +77,7 @@ void render_init(){
     // Load textures
     int width,height;
     float unit_size;
+    float unit_size_2;
     uint32_t* temp_m;
 
     // Players
@@ -114,8 +116,9 @@ void render_init(){
         temp_m = darena_matrix;
         width=1,height=1;
         unit_size = ARENA_R*2;
+        unit_size_2 = ARENA_U*2;
     }
-    shared_ptr<Render_Matrix> arena_render_matrix = texture_manager->create_render_matrix(0,0,width,height,darena_matrix,unit_size,unit_size);
+    shared_ptr<Render_Matrix> arena_render_matrix = texture_manager->create_render_matrix(0,0,width,height,darena_matrix,unit_size,unit_size_2);
     texture_manager->create_render_object(arena_render_matrix,ARENA_RENDER_LAYER);
     texture_manager->register_all_objects();
 
@@ -158,6 +161,12 @@ void render_tick(Input& input, float dt){
     QueryPerformanceCounter(&time1);
 #endif
 
+    // Barrier for play button
+    if (!run_game){
+        if (btn_pressed(BUTTON_START)) run_game = true;
+        else return;
+    }
+
     // Set acceleration
     if (btn_down(BUTTON_UP)) player1->accelerate(ACC_UP);
     if (btn_down(BUTTON_DOWN)) player1->accelerate(ACC_DOWN);
@@ -166,7 +175,7 @@ void render_tick(Input& input, float dt){
 
     physics->physics_tick(dt);
     
-    #ifdef DEBUG_INFO
+#ifdef DEBUG_INFO
     QueryPerformanceCounter(&time2);
     if (!running) return;
 #endif
