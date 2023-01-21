@@ -3,14 +3,14 @@
 #include "utils.hpp"
 #include <stdexcept>
 
-#define P_SPEED 50.f
-#define P_ACCELERATION 500
-#define B_ACCELERATION 1400
-#define B_Y_SPEED 34.f
-#define B_MAX_Y_SPEED 60.f
+#define P_ACCELERATION 700
+#define B_ACCELERATION 1350
+#define B_Y_SPEED 30.f
+#define B_MAX_Y_SPEED 80.f
 #define B_INIT_SPEED 40.f
 #define P_DRAG .05f
-#define B_DRAG 1.7f
+#define B_DRAG 1.6f
+#define B_Y_DRAG 0.2f
 
 #define BOUND_TOP (1<<0)
 #define BOUND_BOTTOM (1<<1)
@@ -136,17 +136,16 @@ float m_y_offset;
 class Collider {
 friend class Entity_Physics;
 public:
-Collider(aabb_bounds *bounds, bool is_hard_collider, vector<int> target_collision_groups)
-: m_bounds(*bounds), hard_collider(is_hard_collider), m_target_collision_groups(target_collision_groups){};
+Collider(aabb_bounds *bounds, vector<pair<int,bool>> target_collision_groups)
+: m_bounds(*bounds), m_target_collision_groups(target_collision_groups){};
 
 aabb_bounds getBounds(){
     return m_bounds;
 }
 
 private:
-vector<int> m_target_collision_groups;
+vector<pair<int,bool>> m_target_collision_groups;
 aabb_bounds m_bounds;
-bool hard_collider = true;
 };
 
 class Kinematic_Object {
@@ -159,9 +158,9 @@ public:
     @param collision_group all collider objects within this group can collide with each other, groups must be declared contiguously i.e. group 0 must exist before group 1
     @param bound_data a struct containing aabb bound coordinates, if bound_data is NULL no collider will be set.
     @param is_hard_collider whether the collider will hard collide with its targets or not
-    @param target_collider_groups a vector of the target collider groups
+    @param target_collider_groups a vector of pairs <int,bool> of (target collider group, is hard collider)
 */
-Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_dynamic_properties* init_prop, int collision_group, aabb_bounds* bound_data, bool is_hard_collider, vector<int> target_collider_groups);
+Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_dynamic_properties* init_prop, int collision_group, aabb_bounds* bound_data, vector<pair<int,bool>> target_collider_groups);
 Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_dynamic_properties* init_prop);
 
 ~Kinematic_Object(){
