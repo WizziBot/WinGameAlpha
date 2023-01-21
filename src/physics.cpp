@@ -115,7 +115,8 @@ void Entity_Physics::process_collisions(){
                             out_flag = BOUND_RIGHT;
                             if (hard_collision) (*kobj)->m_posX = kobj_otherX - collider1.half_width - collider2.half_width;
                         }
-                        (*kobj)->onCollision(OBJECT_COLLIDER,(void*)kobj_other.base(),out_flag,*target_group_id);
+                        
+                        (*kobj)->onCollision(OBJECT_COLLIDER,(void*)(*kobj_other),out_flag,*target_group_id);
                     }
                 }
                 for (bound = (*target_group).bounds.begin(); bound != (*target_group).bounds.end(); bound++){
@@ -144,7 +145,7 @@ void Entity_Physics::process_collisions(){
                         collided = true;
                     }
                     if (collided){
-                        (*kobj)->onCollision(COLLIDER_BOUNDARY,(void*)bound.base(),out_flag,*target_group_id);
+                        (*kobj)->onCollision(COLLIDER_BOUNDARY,(void*)(*bound),out_flag,*target_group_id);
                     }
                 }
             }
@@ -152,7 +153,7 @@ void Entity_Physics::process_collisions(){
     }
 }
 
-Kinematic_Object::Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_initial_properties* init_prop,
+Kinematic_Object::Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_dynamic_properties* init_prop,
 int collision_group, aabb_bounds* bound_data, bool is_hard_collider, vector<int> target_collision_groups){
     if (physics == NULL) throw std::invalid_argument("Physics Error: Physics pointer must not be null in kinematic object");
     if (bound_data == NULL) throw std::invalid_argument("Physics Error: Bound data pointer must not be null in this constructor.");
@@ -169,7 +170,7 @@ int collision_group, aabb_bounds* bound_data, bool is_hard_collider, vector<int>
     physics->register_kinematic_object(this);
     WGAERRCHECK(physics->register_collider_object(collision_group,this));
 }
-Kinematic_Object::Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_initial_properties* init_prop){
+Kinematic_Object::Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_dynamic_properties* init_prop){
     if (physics == NULL) throw std::invalid_argument("Physics Error: Physics pointer must not be null in kinematic object");
     if (init_prop != NULL){
         m_posY = init_prop->posY;

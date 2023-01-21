@@ -6,7 +6,8 @@
 #define P_SPEED 50.f
 #define P_ACCELERATION 500
 #define B_ACCELERATION 1400
-#define B_Y_SPEED 28.f
+#define B_Y_SPEED 34.f
+#define B_MAX_Y_SPEED 60.f
 #define B_INIT_SPEED 40.f
 #define P_DRAG .05f
 #define B_DRAG 1.7f
@@ -38,7 +39,7 @@ struct aabb_bounds{
     float half_height;
 };
 
-struct kinematic_initial_properties{
+struct kinematic_dynamic_properties{
     float posY=0;
     float posX=0;
     float dy=0;
@@ -160,8 +161,8 @@ public:
     @param is_hard_collider whether the collider will hard collide with its targets or not
     @param target_collider_groups a vector of the target collider groups
 */
-Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_initial_properties* init_prop, int collision_group, aabb_bounds* bound_data, bool is_hard_collider, vector<int> target_collider_groups);
-Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_initial_properties* init_prop);
+Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_dynamic_properties* init_prop, int collision_group, aabb_bounds* bound_data, bool is_hard_collider, vector<int> target_collider_groups);
+Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_dynamic_properties* init_prop);
 
 ~Kinematic_Object(){
     m_collider.reset();
@@ -179,6 +180,10 @@ virtual void onCollision(const collider_type other_type, void* other_collider_pt
 
 shared_ptr<Collider> getCollider(){
     return m_collider;
+}
+
+float getDY(){
+    return m_dy;
 }
 
 protected:
