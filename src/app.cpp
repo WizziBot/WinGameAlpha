@@ -106,7 +106,7 @@ void render_init(){
     if (err == WGA_FAILURE) {
         temp_m = dball_matrix;
         width=1,height=1;
-        unit_size = B_DIAMETER;
+        unit_size = B_DIAMETER*2;
     }
     shared_ptr<Render_Matrix> ball_render_matrix = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
     

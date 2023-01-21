@@ -37,14 +37,14 @@ void Ball::onCollision(const collider_type other_type, void* other_collider_ptr,
             else m_dy += other_dy;
             if (m_posX > 0) m_dx = -B_INIT_SPEED;
             else m_dx = B_INIT_SPEED;
-            m_ddy = other_dy*2;
+            m_ddy += other_dy;
             boost_timer2 = 0.3f;
         } else if (active_flags & (BOUND_LEFT | BOUND_RIGHT)){
             if (active_flags & BOUND_LEFT) m_ddx = B_ACCELERATION, m_dx = B_INIT_SPEED + 12, m_dy += other_dy;
             else m_ddx = -B_ACCELERATION, m_dx = -B_INIT_SPEED - 12, m_dy += other_dy;
-            m_ddy = other_dy*1.5;
+            m_ddy += other_dy/2;
             boost_timer = 0.35f;
-            boost_timer2 = 0.3f;
+            boost_timer2 = 0.2f;
         }
     }
 }

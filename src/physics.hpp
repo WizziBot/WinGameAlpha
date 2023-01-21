@@ -4,13 +4,13 @@
 #include <stdexcept>
 
 #define P_ACCELERATION 700
-#define B_ACCELERATION 1350
+#define B_ACCELERATION 1300
 #define B_Y_SPEED 30.f
 #define B_MAX_Y_SPEED 80.f
 #define B_INIT_SPEED 40.f
 #define P_DRAG .05f
-#define B_DRAG 1.6f
-#define B_Y_DRAG 0.2f
+#define B_DRAG 1.65f
+#define B_Y_DRAG 0.4f
 
 #define BOUND_TOP (1<<0)
 #define BOUND_BOTTOM (1<<1)
