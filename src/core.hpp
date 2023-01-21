@@ -3,12 +3,17 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <string>
+#include <utility>
 
 using std::shared_ptr;
 using std::make_shared;
+using std::string;
+using std::pair;
+using std::make_pair;
 
 // Enable OpenCL
-#define USING_OPENCL
+// #define USING_OPENCL
 
 // Enable debug information
 // #define DEBUG_INFO
