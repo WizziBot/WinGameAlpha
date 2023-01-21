@@ -22,8 +22,8 @@ public:
     @param render_layer the id of the render layer of the object where the render objects within the layer will be rendered together,
     the render layers must be declared contiguously i.e. layer 0 must exist before layer 1
 */
-Ball(shared_ptr<Entity_Physics> physics, shared_ptr<Drawer> drawer,kinematic_initial_properties* initial_properties, int collision_group, vector<int> target_collision_groups, aabb_bounds* bound_data, shared_ptr<Render_Matrix> render_matrix, int render_layer) 
-: Kinematic_Object(physics,initial_properties,collision_group,bound_data,true,target_collision_groups), Render_Object(drawer, render_matrix, render_layer, true) {};
+Ball(shared_ptr<Entity_Physics> physics, shared_ptr<Drawer> drawer,kinematic_dynamic_properties* initial_properties, int collision_group, vector<pair<int,bool>> target_collision_groups, aabb_bounds* bound_data, shared_ptr<Render_Matrix> render_matrix, int render_layer) 
+: Kinematic_Object(physics,initial_properties,collision_group,bound_data,target_collision_groups), Render_Object(drawer, render_matrix, render_layer, true) {};
 
 // Physics
 void onCollision(const collider_type other_type, void* other_collider_ptr, bound_flags active_flags, int other_collider_group) override;
@@ -37,7 +37,7 @@ draw_pos draw_get_pos() override{
 
 private:
 float boost_timer = 0.f;
-
+float boost_timer2 = 0.f;
 };
 
 }
