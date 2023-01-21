@@ -51,13 +51,13 @@ void render_init(){
     // Register objects
     physics = make_shared<Entity_Physics>();
 
-    kinematic_initial_properties player1_init = {
+    kinematic_dynamic_properties player1_init = {
         .posX = -P_X_DISPLACEMENT
     };
-    kinematic_initial_properties player2_init = {
+    kinematic_dynamic_properties player2_init = {
         .posX = P_X_DISPLACEMENT
     };
-    kinematic_initial_properties ball_init = {
+    kinematic_dynamic_properties ball_init = {
         .dy = B_Y_SPEED,
         .dx = B_INIT_SPEED
     };
@@ -129,8 +129,8 @@ void render_init(){
     for (bound = bounds.begin(); bound != bounds.end(); bound++){
         physics->register_collider_boundary(ARENA_COLLISION_GROUP,bound.base());
     }
-    vector<int> player_targets(1,ARENA_COLLISION_GROUP); player_targets.push_back(B_COLLISION_GROUP);
-    vector<int> ball_targets; ball_targets.push_back(ARENA_COLLISION_GROUP); ball_targets.push_back(P_COLLISION_GROUP);
+    vector<pair<int,bool>> player_targets; player_targets.push_back(make_pair<int,bool>(ARENA_COLLISION_GROUP,true)); player_targets.push_back(make_pair<int,bool>(B_COLLISION_GROUP,false));
+    vector<pair<int,bool>> ball_targets; ball_targets.push_back(make_pair(ARENA_COLLISION_GROUP,true)); ball_targets.push_back(make_pair(P_COLLISION_GROUP,true));
     player1 = make_shared<Player>(physics, drawer, &player1_init, P_COLLISION_GROUP, player_targets, &player_aabb, player1_render_matrix, P_B_RENDER_LAYER);
     player2 = make_shared<Player>(physics, drawer, &player2_init, P_COLLISION_GROUP, player_targets, &player_aabb, player2_render_matrix, P_B_RENDER_LAYER);
     ball = make_shared<Ball>(physics, drawer, &ball_init, B_COLLISION_GROUP, ball_targets, &ball_aabb, ball_render_matrix, P_B_RENDER_LAYER);
