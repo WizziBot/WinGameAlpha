@@ -10,7 +10,7 @@ using std::make_shared;
 using std::string;
 
 // Enable OpenCL
-#define USING_OPENCL
+// #define USING_OPENCL
 
 // Enable debug information
 // #define DEBUG_INFO
