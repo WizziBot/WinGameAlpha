@@ -66,8 +66,8 @@ void Entity_Physics::process_collisions(){
     // sort target groups
     vector<Collider_Group>::iterator group;
     vector<Collider_Group>::iterator target_group;
-    vector<int> target_groups;
-    vector<int>::iterator target_group_id;
+    vector<pair<int,bool>> target_groups;
+    vector<pair<int,bool>>::iterator target_group_id;
     vector<Kinematic_Object*>::iterator kobj;
     vector<Kinematic_Object*>::iterator kobj_other;
     vector<Collider_Boundary*>::iterator bound;
@@ -88,16 +88,17 @@ void Entity_Physics::process_collisions(){
             kobjX = (*kobj)->m_posX;
             kobjY = (*kobj)->m_posY;
             collider1 = (*kobj)->getCollider().get()->m_bounds;
-            hard_collision = (*kobj)->getCollider().get()->hard_collider;
             target_groups = (*kobj)->getCollider().get()->m_target_collision_groups;
             target_group_id = target_groups.begin();
-            for(target_group = collision_groups.begin()+(*target_group_id); target_group_id != target_groups.end();
-            target_group_id++, target_group = collision_groups.begin()+(*target_group_id)){
+            for(target_group = collision_groups.begin()+(*target_group_id).first; target_group_id != target_groups.end();
+            target_group_id++, target_group = collision_groups.begin()+(*target_group_id).first){
+                hard_collision = (*target_group_id).second;
                 for (kobj_other = (*target_group).k_objects.begin(); kobj_other != (*target_group).k_objects.end(); kobj_other++){
                     if (kobj == kobj_other) continue;
                     kobj_otherX = (*kobj_other)->m_posX;
                     kobj_otherY = (*kobj_other)->m_posY;
                     collider2 = (*(*kobj_other)->getCollider()).m_bounds;
+
                     if (abs(kobjX-kobj_otherX) < collider2.half_width+collider1.half_width &&
                         abs(kobjY-kobj_otherY) < collider1.half_height+collider2.half_height){
                         if (kobjY - collider1.half_height < kobj_otherY - collider2.half_height){
@@ -115,7 +116,8 @@ void Entity_Physics::process_collisions(){
                             out_flag = BOUND_RIGHT;
                             if (hard_collision) (*kobj)->m_posX = kobj_otherX - collider1.half_width - collider2.half_width;
                         }
-                        (*kobj)->onCollision(OBJECT_COLLIDER,(void*)kobj_other.base(),out_flag,*target_group_id);
+                        
+                        (*kobj)->onCollision(OBJECT_COLLIDER,(void*)(*kobj_other),out_flag,(*target_group_id).first);
                     }
                 }
                 for (bound = (*target_group).bounds.begin(); bound != (*target_group).bounds.end(); bound++){
@@ -144,7 +146,7 @@ void Entity_Physics::process_collisions(){
                         collided = true;
                     }
                     if (collided){
-                        (*kobj)->onCollision(COLLIDER_BOUNDARY,(void*)bound.base(),out_flag,*target_group_id);
+                        (*kobj)->onCollision(COLLIDER_BOUNDARY,(void*)(*bound),out_flag,(*target_group_id).first);
                     }
                 }
             }
@@ -152,8 +154,8 @@ void Entity_Physics::process_collisions(){
     }
 }
 
-Kinematic_Object::Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_initial_properties* init_prop,
-int collision_group, aabb_bounds* bound_data, bool is_hard_collider, vector<int> target_collision_groups){
+Kinematic_Object::Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_dynamic_properties* init_prop,
+int collision_group, aabb_bounds* bound_data, vector<pair<int,bool>> target_collision_groups){
     if (physics == NULL) throw std::invalid_argument("Physics Error: Physics pointer must not be null in kinematic object");
     if (bound_data == NULL) throw std::invalid_argument("Physics Error: Bound data pointer must not be null in this constructor.");
     if (init_prop != NULL){
@@ -164,12 +166,12 @@ int collision_group, aabb_bounds* bound_data, bool is_hard_collider, vector<int>
         m_ddy = init_prop->ddy;
         m_ddx = init_prop->ddx;
     }
-    m_collider = make_shared<Collider>(bound_data,is_hard_collider,target_collision_groups);
+    m_collider = make_shared<Collider>(bound_data,target_collision_groups);
 
     physics->register_kinematic_object(this);
     WGAERRCHECK(physics->register_collider_object(collision_group,this));
 }
-Kinematic_Object::Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_initial_properties* init_prop){
+Kinematic_Object::Kinematic_Object(shared_ptr<Entity_Physics> physics, kinematic_dynamic_properties* init_prop){
     if (physics == NULL) throw std::invalid_argument("Physics Error: Physics pointer must not be null in kinematic object");
     if (init_prop != NULL){
         m_posY = init_prop->posY;

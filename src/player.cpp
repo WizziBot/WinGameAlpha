@@ -5,7 +5,7 @@ namespace WinGameAlpha {
 
 inline static float shake_animation(float t){
     float val = (2/t)*sinf(100/(t*0.3+1));
-    val = clamp(-4,val,4);
+    val = clamp(-5,val,5);
     return val*0.5;
 }
 
