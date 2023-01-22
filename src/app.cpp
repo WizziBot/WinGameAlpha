@@ -117,8 +117,10 @@ void render_init(){
         width=1,height=1;
         unit_size = ARENA_R*2;
         unit_size_2 = ARENA_U*2;
+    } else {
+        unit_size_2 = unit_size;
     }
-    shared_ptr<Render_Matrix> arena_render_matrix = texture_manager->create_render_matrix(0,0,width,height,darena_matrix,unit_size,unit_size_2);
+    shared_ptr<Render_Matrix> arena_render_matrix = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size_2);
     texture_manager->create_render_object(arena_render_matrix,ARENA_RENDER_LAYER);
     texture_manager->register_all_objects();
 
