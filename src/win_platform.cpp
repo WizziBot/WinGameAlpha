@@ -176,6 +176,8 @@ case vk:{ \
                         break;
                         switch_btn(BUTTON_PAUSE,VK_ESCAPE)
                         break;
+                        switch_btn(BUTTON_RESET,VK_R)
+                        break;
                     }
                 }break;
                 default: {

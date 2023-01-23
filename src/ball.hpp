@@ -35,6 +35,15 @@ draw_pos draw_get_pos() override{
     return pos;
 };
 
+void reset_position() {
+    m_posX = 0;
+    m_posY = 0;
+    m_dx = B_INIT_SPEED;
+    m_dy = B_Y_SPEED;
+    m_ddx = 0;
+    m_ddy = 0;
+}
+
 private:
 float boost_timer = 0.f;
 float boost_timer2 = 0.f;

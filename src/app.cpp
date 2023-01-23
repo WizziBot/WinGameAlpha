@@ -155,6 +155,10 @@ void render_update(){
 #endif
 }
 
+void reset_game(){
+    ball->reset_position();
+}
+
 void render_tick(Input& input, float dt){
 
 #ifdef DEBUG_INFO
@@ -167,6 +171,9 @@ void render_tick(Input& input, float dt){
     if (btn_pressed(BUTTON_PAUSE)) run_game = !run_game;
 
     if (run_game){
+        if (btn_pressed(BUTTON_RESET)){
+            reset_game();
+        }
         // Set acceleration
         if (btn_down(BUTTON_UP)) player1->accelerate(ACC_UP);
         if (btn_down(BUTTON_DOWN)) player1->accelerate(ACC_DOWN);
