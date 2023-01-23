@@ -169,11 +169,10 @@ void render_tick(Input& input, float dt){
 
     // Barrier for play button
     if (btn_pressed(BUTTON_PAUSE)) run_game = !run_game;
+    // Reset game
+    if (btn_pressed(BUTTON_RESET)) reset_game();
 
     if (run_game){
-        if (btn_pressed(BUTTON_RESET)){
-            reset_game();
-        }
         // Set acceleration
         if (btn_down(BUTTON_UP)) player1->accelerate(ACC_UP);
         if (btn_down(BUTTON_DOWN)) player1->accelerate(ACC_DOWN);

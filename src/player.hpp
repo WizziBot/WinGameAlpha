@@ -40,8 +40,10 @@ private:
 
 acceleration_dir restricted_dir;
 float cooldown_timer=0;
+float cooldown_timer2=0;
 float shake_timer=2.f;
 bool shaking = false;
+float rebound_ddy=0;
 };
 
 }
