@@ -33,7 +33,9 @@ public:
     @param unit_size_y the height of each square unit in relative size
 */
 Render_Matrix(float x_offset, float y_offset, float width, float height, uint32_t* matrix, float unit_size_x, float unit_size_y);
-
+~Render_Matrix(){
+    VirtualFree(m_matrix,0,MEM_RELEASE);
+}
 void edit_matrix_offset(float x_offset, float y_offset){
     m_x_offset = x_offset;
     m_y_offset = y_offset;
