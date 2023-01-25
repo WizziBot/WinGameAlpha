@@ -17,6 +17,7 @@ public:
 Texture_Manager(shared_ptr<Drawer> drawer){
     m_drawer = drawer;
 }
+~Texture_Manager();
 /* Render object which contains matrices to be rendered on each draw() call if registered
     @param render_matrix a pointer to the render matrix texture
     @param render_layer the id of the render layer of the object where the render objects within the layer will be rendered together,
