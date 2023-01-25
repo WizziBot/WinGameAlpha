@@ -4,6 +4,10 @@
 
 namespace WinGameAlpha {
 
+#define TEXEX(msg,err_no) if (err_no != WGA_SUCCESS) { cerr << "Texture Manager Error: " \
+                      << msg << endl;\
+                      return WGA_FAILURE;}
+
 
 class Texture_Manager {
 public:
@@ -13,14 +17,16 @@ public:
 Texture_Manager(shared_ptr<Drawer> drawer){
     m_drawer = drawer;
 }
-~Texture_Manager();
-/* Render object which contains rectangles to be rendered on each draw() call if registered
+/* Render object which contains matrices to be rendered on each draw() call if registered
     @param render_matrix a pointer to the render matrix texture
     @param render_layer the id of the render layer of the object where the render objects within the layer will be rendered together,
     the render layers must be declared contiguously i.e. layer 0 must exist before layer 1
     @return WGA_SUCCESS on succes and WGA_FAILURE on failure
 */
 void create_render_object(shared_ptr<Render_Matrix> render_matrix, int render_layer);
+/* Load character textures. Initialises the Character_Library and fills it with the Render_Matrix objects retrieved by loading the textures
+*/
+wga_err load_character_textures();
 /* Render matrix is a matrix type texture
     @param x_offset the x_offset from the related object's coordinates
     @param y_offset the y_offset from the related object's coordinates
@@ -49,9 +55,13 @@ static void flip_matrix(uint32_t* matrix, int width, int height);
 /* Rotate matrix 90 degrees clockwise (transpose and flip) */
 static void rotate_matrix(uint32_t* matrix, int* width, int* height, int n_rotations);
 
+Character_Library* get_char_lib_ptr(){
+    return &m_char_lib;
+}
 private:
 shared_ptr<Drawer> m_drawer;
 vector<uint32_t*> m_matrices;
+Character_Library m_char_lib;
 vector<Render_Object> render_objects;
 vector<shared_ptr<Render_Matrix>> render_matrices;
 };

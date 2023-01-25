@@ -16,11 +16,21 @@ struct draw_pos {
     float y;
 };
 
+struct unit_dims {
+    float x;
+    float y;
+};
+
+
 class Drawer;
+class Texture_Manager;
+class Text_Object;
+class Render_Object;
 
 // RENDER MATRIX
 class Render_Matrix {
 friend class Drawer;
+friend class Text_Object;
 public:
 
 /* Render matrix is a matrix type texture
@@ -52,6 +62,10 @@ void edit_matrix_unit_size(float unit_size_x, float unit_size_y){
     m_unit_size_y = unit_size_y;
 }
 
+unit_dims get_unit_dims(){
+    return (unit_dims){.x=m_unit_size_x,.y=m_unit_size_y};
+}
+
 private:
 float m_unit_size_x;
 float m_unit_size_y;
@@ -76,14 +90,69 @@ public:
 Render_Object(shared_ptr<Drawer> drawer, shared_ptr<Render_Matrix> render_matrix, int render_layer, bool is_subclass);
 
 virtual draw_pos draw_get_pos(){
-    draw_pos zero = {0,0};
-    return zero;
+    return m_draw_pos;
 };
 
+void draw_set_pos(draw_pos dpos){
+    m_draw_pos = dpos;
+}
+
+void set_unit_dims(unit_dims udims){
+    r_unit_size_x = udims.x;
+    r_unit_size_y = udims.y;
+}
+
 protected:
+draw_pos m_draw_pos = {0,0};
 int m_render_layer;
 shared_ptr<Render_Matrix> m_render_matrix;
+float r_unit_size_x;
+float r_unit_size_y;
 
+};
+
+class Character_Library {
+friend class Texture_Manager;
+public:
+
+
+shared_ptr<Render_Matrix> get_character_matrix(char character);
+
+private:
+vector<shared_ptr<Render_Matrix> > character_list;
+int length =0;
+};
+
+class Text_Object {
+public:
+
+Text_Object(shared_ptr<Drawer> drawer, shared_ptr<Texture_Manager> texture_manager, string text, float offset_x, float offset_y, float unit_size, int char_width,int render_layer);
+/* Change the text displayed by the text object
+*/
+void change_text(string text){
+    clean_text();
+    set_text(text);
+    display();
+}
+
+void set_offset(draw_pos dpos){
+    m_offset = dpos;
+}
+
+private:
+draw_pos m_offset;
+void set_text(string text);
+void clean_text();
+void display();
+shared_ptr<Drawer> m_drawer;
+shared_ptr<Texture_Manager> m_texture_manager;
+Character_Library* character_library; 
+vector<shared_ptr<Render_Object>> text_characters;
+int text_idx;
+string text_literal;
+float m_unit_size=0;
+int m_render_layer;
+int m_char_width;
 };
 
 }
