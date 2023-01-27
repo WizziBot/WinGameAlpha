@@ -6,6 +6,11 @@
 #include "physics.hpp"
 #include "app.hpp"
 
+typedef uint8_t reset_pos_direction;
+
+#define RIGHT_DIR (1<<0)
+#define LEFT_DIR (1<<1)
+
 namespace WinGameAlpha{
 
 class Ball : public Kinematic_Object, public Render_Object {
@@ -35,10 +40,11 @@ draw_pos draw_get_pos() override{
     return pos;
 };
 
-void reset_position() {
+void reset_position(reset_pos_direction dir) {
     m_posX = 0;
     m_posY = 0;
-    m_dx = B_INIT_SPEED;
+    if (dir & RIGHT_DIR) m_dx = B_INIT_SPEED;
+    else m_dx = -B_INIT_SPEED;
     m_dy = B_Y_SPEED;
     m_ddx = 0;
     m_ddy = 0;

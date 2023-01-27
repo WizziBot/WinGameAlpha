@@ -30,11 +30,12 @@ void Ball::onCollision(const collider_type other_type, void* other_collider_ptr,
         if (active_flags & (BOUND_TOP | BOUND_BOTTOM)) m_dy *= -1;
         if (active_flags & (BOUND_LEFT | BOUND_RIGHT)) {
             if (active_flags & BOUND_LEFT){
-                increment_score(1);
-            } else {
                 increment_score(2);
+                reset_position(RIGHT_DIR);
+            } else {
+                increment_score(1);
+                reset_position(LEFT_DIR);
             }
-            reset_position();
         }
     } else if (other_type == OBJECT_COLLIDER){
         float other_dy = ((Kinematic_Object*)other_collider_ptr)->getDY();

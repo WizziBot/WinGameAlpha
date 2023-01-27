@@ -23,8 +23,10 @@ shared_ptr<Player> player1;
 shared_ptr<Player> player2;
 shared_ptr<Ball> ball;
 vector<Collider_Boundary> bounds;
-shared_ptr<Text_Object> score;
-int score_counter = 0;
+shared_ptr<Text_Object> scorep1;
+shared_ptr<Text_Object> scorep2;
+int score_counterp1 = 0;
+int score_counterp2 = 0;
 
 #ifdef DEBUG_INFO
 LARGE_INTEGER time1, time2, end_time;
@@ -141,7 +143,8 @@ void render_init(){
     
     // Character textures and score counter
     WGAERRCHECK(texture_manager->load_character_textures())
-    score = make_shared<Text_Object>(drawer,texture_manager,"0",0,30,1,4,2);
+    scorep2 = make_shared<Text_Object>(drawer,texture_manager,"0",60,35,1,4,2);
+    scorep1 = make_shared<Text_Object>(drawer,texture_manager,"0",-60,35,1,4,2);
     
     drawer->set_background_colour(BACKGROUND_COLOUR);
     drawer->draw_objects();
@@ -162,13 +165,19 @@ void render_update(){
 }
 
 void increment_score(int player){
-    score_counter++;
-    string out = std::to_string(score_counter);
-    score->change_text(out);
+    if (player == 1){
+        score_counterp1++;
+        string out = std::to_string(score_counterp1);
+        scorep1->change_text(out);
+    } else {
+        score_counterp2++;
+        string out = std::to_string(score_counterp2);
+        scorep2->change_text(out);
+    }
 }
 
 void reset_game(){
-    ball->reset_position();
+    ball->reset_position(RIGHT_DIR);
 }
 
 void render_tick(Input& input, float dt){
