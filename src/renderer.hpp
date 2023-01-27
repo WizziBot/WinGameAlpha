@@ -89,15 +89,16 @@ private:
     @return WGA_SUCCESS on success and WGA_FAILURE on except
 */
 wga_err register_render_object(shared_ptr<Render_Object> render_obj);
+wga_err register_render_object(shared_ptr<Render_Object> render_obj, list<shared_ptr<Render_Object>>::iterator& obj_iter);
 /* Removes render object from references
     @param render_layer the render layer of the object to remove
     @param index the index of the object within the objects in the render layer
 */
-void unregister_render_objects(int render_layer, int start, int size);
+void unregister_render_objects(int render_layer, list<shared_ptr<Render_Object>>::iterator start, int size);
 /* Draw rectangle absolute (pixel) coordinates*/
 void draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour);
 uint32_t m_background_colour=0;
-vector<vector<shared_ptr<Render_Object> > > render_layers;
+vector<list<shared_ptr<Render_Object> > > render_layers;
 
 #ifdef USING_OPENCL
 cl_uint src_size;

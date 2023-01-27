@@ -45,8 +45,7 @@ wga_err Drawer::register_render_object(shared_ptr<Render_Object> render_obj){
     if (render_obj->m_render_layer > render_layers.size()){
         RNDERR("Render layers must be contiguous: invalid render layer id.");
     } else if (render_obj->m_render_layer == render_layers.size()){
-        vector<shared_ptr<Render_Object> > render_objs;
-        render_objs.reserve(RENDER_OBJECTS_ALLOCATE_SIZE);
+        list<shared_ptr<Render_Object> > render_objs;
         render_objs.push_back(render_obj);
         render_layers.push_back(render_objs);
     } else {
@@ -54,10 +53,26 @@ wga_err Drawer::register_render_object(shared_ptr<Render_Object> render_obj){
     }
     return WGA_SUCCESS;
 }
+wga_err Drawer::register_render_object(shared_ptr<Render_Object> render_obj, list<shared_ptr<Render_Object>>::iterator& obj_iter){
+    if (render_obj->m_render_layer > render_layers.size()){
+        RNDERR("Render layers must be contiguous: invalid render layer id.");
+    } else if (render_obj->m_render_layer == render_layers.size()){
+        list<shared_ptr<Render_Object> > render_objs;
+        render_objs.push_back(render_obj);
+        render_layers.push_back(render_objs);
+    } else {
+        render_layers.at(render_obj->m_render_layer).push_back(render_obj);
+    }
+    obj_iter = render_layers.at(render_obj->m_render_layer).end();
+    obj_iter--;
+    return WGA_SUCCESS;
+}
 
-void Drawer::unregister_render_objects(int render_layer, int start, int size){
-    vector<vector<shared_ptr<Render_Object> > >::iterator layer = render_layers.begin() + render_layer;
-    (*layer).erase((*layer).begin()+start,(*layer).begin()+size);
+void Drawer::unregister_render_objects(int render_layer, list<shared_ptr<Render_Object>>::iterator start, int size){
+    vector<list<shared_ptr<Render_Object> > >::iterator layer = render_layers.begin() + render_layer;
+    list<shared_ptr<Render_Object>>::iterator end = layer->begin();
+    std::advance(end,std::distance(layer->begin(),start)+size);
+    (*layer).erase(start,end);
 }
 
 void Drawer::draw_objects(){
@@ -71,11 +86,11 @@ void Drawer::draw_objects(){
     float rh = (float)render_state.height;
     float rw = (float)render_state.width;
     float factor = (float)render_state.height/100.f;
-    vector<vector<shared_ptr<Render_Object> > >::iterator layer;
+    vector<list<shared_ptr<Render_Object> > >::iterator layer;
     shared_ptr<Render_Matrix> matrix;
     draw_pos offset;
     for (layer = render_layers.begin(); layer != render_layers.end(); layer++){
-        vector<shared_ptr<Render_Object> >::iterator render_object;
+        list<shared_ptr<Render_Object> >::iterator render_object;
         for (render_object = (*layer).begin(); render_object != (*layer).end(); render_object++){
             offset = (*render_object)->draw_get_pos();
             
@@ -262,16 +277,16 @@ void Text_Object::set_text(string text){
 void Text_Object::display(){
     vector<shared_ptr<Render_Object>>::iterator iter;
     for (iter = text_characters.begin(); iter != text_characters.end(); iter++){
-        m_drawer->register_render_object(*iter);
         if (iter == text_characters.begin()){
-            text_idx = m_drawer->render_layers.at(m_render_layer).size()-1;
+            m_drawer->register_render_object(*iter,text_idx);
+        } else {
+            m_drawer->register_render_object(*iter);
         }
     }
 }
 
 void Text_Object::clean_text(){
     m_drawer->unregister_render_objects(m_render_layer,text_idx,text_literal.size());
-    text_idx = 0;
     text_characters.erase(text_characters.begin(),text_characters.end());
 }
 
@@ -399,4 +414,3 @@ wga_err Drawer::init_opencl(){
 #endif
 
 }
-

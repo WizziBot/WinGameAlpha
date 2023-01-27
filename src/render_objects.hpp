@@ -148,7 +148,7 @@ shared_ptr<Drawer> m_drawer;
 shared_ptr<Texture_Manager> m_texture_manager;
 Character_Library* character_library; 
 vector<shared_ptr<Render_Object>> text_characters;
-int text_idx;
+list<shared_ptr<Render_Object>>::iterator text_idx;
 string text_literal;
 float m_unit_size=0;
 int m_render_layer;
