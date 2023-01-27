@@ -179,6 +179,13 @@ void increment_score(int player){
 void reset_game(){
     ball->reset_position(RIGHT_DIR);
 }
+void reset_scores(){
+    score_counterp1 = 0;
+    score_counterp2 = 0;
+    string out = std::to_string(score_counterp2);
+    scorep1->change_text(out);
+    scorep2->change_text(out);
+}
 
 void render_tick(Input& input, float dt){
 
@@ -191,7 +198,10 @@ void render_tick(Input& input, float dt){
     // Barrier for play button
     if (btn_pressed(BUTTON_PAUSE)) run_game = !run_game;
     // Reset game
-    if (btn_pressed(BUTTON_RESET)) reset_game();
+    if (btn_ctrl_pressed(BUTTON_RESET)) {
+        reset_game();
+        reset_scores();
+    } else if (btn_pressed(BUTTON_RESET)) reset_game();
 
     if (run_game){
         // Set acceleration

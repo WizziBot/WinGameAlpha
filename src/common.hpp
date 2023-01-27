@@ -8,6 +8,7 @@
 
 #define btn_down(b) input.buttons[b].down
 #define btn_pressed(b) (input.buttons[b].down && input.buttons[b].changed)
+#define btn_ctrl_pressed(b) (input.buttons[b].down && input.buttons[b].changed && input.buttons[b].ctrl)
 #define btn_released(b) (!input.buttons[b].down && input.buttons[b].changed)
 
 namespace WinGameAlpha{
@@ -15,6 +16,7 @@ namespace WinGameAlpha{
 struct Button_State{
     bool down = false;
     bool changed = false;
+    bool ctrl = false;
 };
 
 #ifdef ENABLE_MOUSE

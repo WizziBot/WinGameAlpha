@@ -159,7 +159,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 #define switch_btn(b,vk) \
 case vk:{ \
     input.buttons[b].changed = (is_down != input.buttons[b].down); \
-    input.buttons[b].down = is_down;}
+    input.buttons[b].down = is_down;\
+    input.buttons[b].ctrl = (GetKeyState(VK_LCONTROL) >> 15);}
 
                     switch (vk_code){
                         switch_btn(BUTTON_UP,VK_W)
