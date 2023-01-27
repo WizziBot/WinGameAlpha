@@ -23,6 +23,8 @@ shared_ptr<Player> player1;
 shared_ptr<Player> player2;
 shared_ptr<Ball> ball;
 vector<Collider_Boundary> bounds;
+shared_ptr<Text_Object> score;
+int score_counter = 0;
 
 #ifdef DEBUG_INFO
 LARGE_INTEGER time1, time2, end_time;
@@ -124,7 +126,7 @@ void render_init(){
     texture_manager->create_render_object(arena_render_matrix,ARENA_RENDER_LAYER);
     texture_manager->register_all_objects();
 
-    Collider_Boundary arena_bound(0, 0, arena_aabb, BOUND_TOP | BOUND_BOTTOM);
+    Collider_Boundary arena_bound(0, 0, arena_aabb, BOUND_ALL);
     bounds.push_back(arena_bound);
     // register the arena bounds
     vector<Collider_Boundary>::iterator bound;
@@ -136,6 +138,10 @@ void render_init(){
     player1 = make_shared<Player>(physics, drawer, &player1_init, P_COLLISION_GROUP, player_targets, &player_aabb, player1_render_matrix, P_B_RENDER_LAYER);
     player2 = make_shared<Player>(physics, drawer, &player2_init, P_COLLISION_GROUP, player_targets, &player_aabb, player2_render_matrix, P_B_RENDER_LAYER);
     ball = make_shared<Ball>(physics, drawer, &ball_init, B_COLLISION_GROUP, ball_targets, &ball_aabb, ball_render_matrix, P_B_RENDER_LAYER);
+    
+    // Character textures and score counter
+    WGAERRCHECK(texture_manager->load_character_textures())
+    score = make_shared<Text_Object>(drawer,texture_manager,"0",0,30,1,4,2);
     
     drawer->set_background_colour(BACKGROUND_COLOUR);
     drawer->draw_objects();
@@ -153,6 +159,12 @@ void render_update(){
 #ifdef USING_OPENCL
     WGAERRCHECK(drawer->cl_resize());
 #endif
+}
+
+void increment_score(int player){
+    score_counter++;
+    string out = std::to_string(score_counter);
+    score->change_text(out);
 }
 
 void reset_game(){
