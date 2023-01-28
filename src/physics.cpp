@@ -8,10 +8,6 @@ namespace WinGameAlpha{
 
 extern bool running;
 
-Entity_Physics::~Entity_Physics(){
-
-}
-
 void Entity_Physics::physics_tick(const float dt){
     process_kinematics(dt);
     process_collisions();

@@ -82,7 +82,7 @@ friend class Drawer;
 public:
 /* Render object which contains rectangles to be rendered on each draw() call if registered
     @param drawer a pointer to the drawer instance
-    @param render_matrix a pointer to the render matrix texture
+    @param render_matrix a pointer to the default render matrix texture
     @param render_layer the id of the render layer of the object where the render objects within the layer will be rendered together,
     the render layers must be declared contiguously i.e. layer 0 must exist before layer 1
     @param is_subclass whether this is a subclass
@@ -102,9 +102,20 @@ void set_unit_dims(unit_dims udims){
     r_unit_size_y = udims.y;
 }
 
+void append_render_matrix(shared_ptr<Render_Matrix> render_matrix){
+    m_render_matrices.push_back(render_matrix);
+}
+
+void switch_active_matrix(int index){
+    if (index < m_render_matrices.size() && index >=0){
+        m_render_matrix = m_render_matrices.at(index);
+    }
+}
+
 protected:
 draw_pos m_draw_pos = {0,0};
 int m_render_layer;
+vector<shared_ptr<Render_Matrix>> m_render_matrices;
 shared_ptr<Render_Matrix> m_render_matrix;
 float r_unit_size_x;
 float r_unit_size_y;

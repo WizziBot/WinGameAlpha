@@ -61,8 +61,6 @@ vector<Collider_Boundary*> bounds;
 class Entity_Physics {
 public:
 
-~Entity_Physics();
-
 /* Process kinematics and collisions on all registered objects
     @param dt the delta time of the frame
 */

@@ -40,7 +40,6 @@ Drawer::~Drawer(){
     clReleaseProgram(program);
 #endif
 }
-
 wga_err Drawer::register_render_object(shared_ptr<Render_Object> render_obj){
     if (render_obj->m_render_layer > render_layers.size()){
         RNDERR("Render layers must be contiguous: invalid render layer id.");
@@ -217,8 +216,9 @@ void Drawer::cl_draw_finish(){
 Render_Object::Render_Object(shared_ptr<Drawer> drawer, shared_ptr<Render_Matrix> render_matrix, int render_layer, bool is_subclass)
 : m_render_layer(render_layer){
     if (render_matrix == NULL) throw std::invalid_argument("Renderer Error: The render matrix must not be null");
+    m_render_matrices.push_back(render_matrix);
     m_render_matrix = render_matrix;
-    unit_dims udims = m_render_matrix->get_unit_dims();
+    unit_dims udims = render_matrix->get_unit_dims();
     r_unit_size_x = udims.x;
     r_unit_size_y = udims.y;
     if (is_subclass) {
@@ -414,3 +414,4 @@ wga_err Drawer::init_opencl(){
 #endif
 
 }
+

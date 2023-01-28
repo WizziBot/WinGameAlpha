@@ -27,6 +27,14 @@ void Player::tick(float dt){
             shaking = false;
         }
     }
+    if (shaking2){
+        if (shake_timer2 > 0){
+            shake_timer2 -= dt;
+
+        } else {
+            switch_active_matrix(0);
+        }
+    }
 }
 
 void Player::accelerate(acceleration_dir dir_flags){
@@ -56,7 +64,10 @@ void Player::onCollision(const collider_type other_type, void* other_collider_pt
         cooldown_timer2 = .02f;
     } else if (other_type == OBJECT_COLLIDER){
         shake_timer = 0.f;
+        shake_timer2 = 1.f;
         shaking = true;
+        shaking2 = true;
+        switch_active_matrix(1);
     }
 }
 
