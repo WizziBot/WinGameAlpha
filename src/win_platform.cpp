@@ -8,7 +8,6 @@
 /* DEFINES */
 #define W_WIDTH 800
 #define W_HEIGHT 450
-#define TICK_DELAY 10
 #define C_ONMSG "WinGameAlpha: Started"
 
 namespace WinGameAlpha {
@@ -18,6 +17,7 @@ Render_State render_state;
 bool running = false;
 bool resizing = false;
 bool resized = false;
+bool gamestart = true;
 
 BOOL WindowResize(HWND hWnd, WPARAM wParam, LPARAM lParam)
 {
@@ -81,11 +81,13 @@ LRESULT window_callback(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam){
             render_state.width = rect.right - rect.left;
             render_state.height = rect.bottom - rect.top;
 #ifndef USING_OPENCL
-            int buffer_size = render_state.width*render_state.height*sizeof(uint32_t); //3 bytes for RGB and 1 byte padding
-            if (render_state.memory) VirtualFree(render_state.memory,0,MEM_RELEASE);
-            render_state.memory = VirtualAlloc(0, buffer_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-            if (render_state.memory == NULL){
-                std::cerr << "Memory assignment failure: Render state" << std::endl;
+            if (running || gamestart){
+                int buffer_size = render_state.width*render_state.height*sizeof(uint32_t); //3 bytes for RGB and 1 byte padding
+                if (render_state.memory) VirtualFree(render_state.memory,0,MEM_RELEASE);
+                render_state.memory = VirtualAlloc(0, buffer_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+                if (render_state.memory == NULL){
+                    std::cerr << "Memory assignment failure: Render state" << std::endl;
+                }
             }
 #endif
             render_state.bitmap_info.bmiHeader.biWidth = render_state.width;
@@ -138,6 +140,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
         performance_frequency = (float)perf.QuadPart;
     }
 
+    gamestart = false;
+
     while (running){
         MSG message;
 
@@ -155,7 +159,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 #define switch_btn(b,vk) \
 case vk:{ \
     input.buttons[b].changed = (is_down != input.buttons[b].down); \
-    input.buttons[b].down = is_down;}
+    input.buttons[b].down = is_down;\
+    input.buttons[b].ctrl = (GetKeyState(VK_LCONTROL) >> 15);}
 
                     switch (vk_code){
                         switch_btn(BUTTON_UP,VK_W)
@@ -176,6 +181,8 @@ case vk:{ \
                         break;
                         switch_btn(BUTTON_PAUSE,VK_ESCAPE)
                         break;
+                        switch_btn(BUTTON_RESET,VK_R)
+                        break;
                     }
                 }break;
                 default: {
@@ -184,8 +191,6 @@ case vk:{ \
                 }
             }
         }
-
-        Sleep(TICK_DELAY);
 
         if (resized){
             render_update();

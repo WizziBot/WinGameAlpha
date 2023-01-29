@@ -23,12 +23,27 @@ void Ball::tick(float dt){
         m_posY += m_dy * dt;
     }
 
+    if (boosting == true) {
+        if (boost_timer3 <= 0){
+            boosting = false;
+            switch_active_matrix(0);
+        } else boost_timer3 -= dt;
+    }
+
 }
 
 void Ball::onCollision(const collider_type other_type, void* other_collider_ptr, bound_flags active_flags, int other_collider_group){
     if (other_type == COLLIDER_BOUNDARY){
         if (active_flags & (BOUND_TOP | BOUND_BOTTOM)) m_dy *= -1;
-        // if (active_flags & (BOUND_LEFT | BOUND_RIGHT)) m_dx *= -1;
+        if (active_flags & (BOUND_LEFT | BOUND_RIGHT)) {
+            if (active_flags & BOUND_LEFT){
+                increment_score(2);
+                reset_position(RIGHT_DIR);
+            } else {
+                increment_score(1);
+                reset_position(LEFT_DIR);
+            }
+        }
     } else if (other_type == OBJECT_COLLIDER){
         float other_dy = ((Kinematic_Object*)other_collider_ptr)->getDY();
         if (active_flags & (BOUND_TOP | BOUND_BOTTOM)){
@@ -39,12 +54,18 @@ void Ball::onCollision(const collider_type other_type, void* other_collider_ptr,
             else m_dx = B_INIT_SPEED;
             m_ddy += other_dy;
             boost_timer2 = 0.3f;
+            boost_timer3 = 0.8f;
+            boosting = true;
+            switch_active_matrix(1);
         } else if (active_flags & (BOUND_LEFT | BOUND_RIGHT)){
             if (active_flags & BOUND_LEFT) m_ddx = B_ACCELERATION, m_dx = B_INIT_SPEED + 12, m_dy += other_dy;
             else m_ddx = -B_ACCELERATION, m_dx = -B_INIT_SPEED - 12, m_dy += other_dy;
             m_ddy += other_dy/2;
             boost_timer = 0.35f;
             boost_timer2 = 0.2f;
+            boost_timer3 = 0.5f;
+            boosting = true;
+            switch_active_matrix(1);
         }
     }
 }

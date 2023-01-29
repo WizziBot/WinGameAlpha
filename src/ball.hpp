@@ -4,7 +4,12 @@
 #include "render_objects.hpp"
 #include "renderer.hpp"
 #include "physics.hpp"
+#include "app.hpp"
 
+typedef uint8_t reset_pos_direction;
+
+#define RIGHT_DIR (1<<0)
+#define LEFT_DIR (1<<1)
 
 namespace WinGameAlpha{
 
@@ -35,9 +40,21 @@ draw_pos draw_get_pos() override{
     return pos;
 };
 
+void reset_position(reset_pos_direction dir) {
+    m_posX = 0;
+    m_posY = 0;
+    if (dir & RIGHT_DIR) m_dx = B_INIT_SPEED;
+    else m_dx = -B_INIT_SPEED;
+    m_dy = B_Y_SPEED;
+    m_ddx = 0;
+    m_ddy = 0;
+}
+
 private:
 float boost_timer = 0.f;
 float boost_timer2 = 0.f;
+float boost_timer3 = 0.f;
+bool boosting = false;
 };
 
 }
