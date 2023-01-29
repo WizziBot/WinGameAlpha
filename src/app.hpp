@@ -6,6 +6,11 @@
 // Rendering
 #define ARENA_RENDER_LAYER 0
 #define P_B_RENDER_LAYER 1
+#define BACKGROUND_COLOUR 0x252525
+#define ARENA_COLOUR 0x1e1e1e
+#define B_COLOUR 0xffffff
+#define P_COLOUR 0xf80505
+
 
 // Physics
 #define ARENA_COLLISION_GROUP 0
@@ -30,7 +35,7 @@ void render_init();
 void render_tick(Input& input, float dt);
 /* Render on resize event */
 void render_update();
-/* Cleanup */
-// void app_cleanup();
+/* Increment the score of a player */
+void increment_score(int player);
 
 }

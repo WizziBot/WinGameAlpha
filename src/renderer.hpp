@@ -40,9 +40,11 @@
 
 #endif
 
-#define MAX_MATRIX_SIZE 128*128
+#define MAX_MATRIX_SIZE 128*128*4
 #define ALPHA_BIT (uint32_t)(1<<31) //high bit of 32bit unsigned
 #define AB ALPHA_BIT
+#define RENDER_OBJECTS_ALLOCATE_SIZE 5
+#define TEXT_OBJ_ALLOCATE_SIZE 5
 
 namespace WinGameAlpha{
 
@@ -52,6 +54,7 @@ extern Render_State render_state;
 class Drawer {
 friend class Render_Object;
 friend class Texture_Manager;
+friend class Text_Object;
 public:
 
 Drawer(wga_err* drawer_err);
@@ -76,23 +79,26 @@ void cl_draw_finish();
 wga_err cl_resize();
 /* Set background to be coloured*/
 void set_background_colour(uint32_t colour);
-/* Setup render layers 
-    @param num_layers number of layers to template such that they can be filled with render objects
-*/
-void create_render_layers(int num_layers);
+
 private:
 
-/* Creates a render object and registers it with the drawer. Gets rendered every call to draw().
+/* Registers render object with the drawer. Gets rendered every call to draw().
     Note: The id of the render layer of the object is a group where the render objects within the layer will be rendered together,
     the render layers must be declared contiguously i.e. layer 0 must exist before layer 1
     @param render_obj a pointer to the render object
     @return WGA_SUCCESS on success and WGA_FAILURE on except
 */
 wga_err register_render_object(shared_ptr<Render_Object> render_obj);
+wga_err register_render_object(shared_ptr<Render_Object> render_obj, list<shared_ptr<Render_Object>>::iterator& obj_iter);
+/* Removes render object from references
+    @param render_layer the render layer of the object to remove
+    @param index the index of the object within the objects in the render layer
+*/
+void unregister_render_objects(int render_layer, list<shared_ptr<Render_Object>>::iterator start, int size);
 /* Draw rectangle absolute (pixel) coordinates*/
 void draw_rect_px(int x0, int y0, int x1, int y1, uint32_t colour);
 uint32_t m_background_colour=0;
-vector<vector<shared_ptr<Render_Object> > > render_layers;
+vector<list<shared_ptr<Render_Object> > > render_layers;
 
 #ifdef USING_OPENCL
 cl_uint src_size;
