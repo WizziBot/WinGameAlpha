@@ -53,6 +53,8 @@ void reset_position(reset_pos_direction dir) {
 private:
 float boost_timer = 0.f;
 float boost_timer2 = 0.f;
+float boost_timer3 = 0.f;
+bool boosting = false;
 };
 
 }

@@ -9,6 +9,8 @@
 #include "player.hpp"
 #include "ball.hpp"
 
+#define GOLD_COL 0xBC9928
+
 namespace WinGameAlpha {
 
 // Globals
@@ -88,7 +90,6 @@ void render_init(){
                          WGACHECKERRNO("Could not load " << path,err);\
                          if (err == WGA_FAILURE) return;
                            
-
     // Players
     ld_texture("./textures/player.wgat")
     texture_manager->rotate_matrix(temp_m,&width,&height,1);
@@ -108,8 +109,9 @@ void render_init(){
     
     // Ball
     ld_texture("./textures/ball.wgat")
-    err = texture_manager->load_texture(&temp_m,&width,&height,&unit_size,"./textures/ball.wgat");
     shared_ptr<Render_Matrix> ball_render_matrix = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
+    ld_texture("./textures/ball_bounce.wgat")
+    shared_ptr<Render_Matrix> ball_bounce = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
     
     // Arena
     ld_texture("./textures/arena.wgat")
@@ -135,11 +137,16 @@ void render_init(){
     player2 = make_shared<Player>(physics, drawer, &player2_init, P_COLLISION_GROUP, player_targets, &player_aabb, player2_render_matrix, P_B_RENDER_LAYER);
     player2->append_render_matrix(player2_bounce);
     ball = make_shared<Ball>(physics, drawer, &ball_init, B_COLLISION_GROUP, ball_targets, &ball_aabb, ball_render_matrix, P_B_RENDER_LAYER);
-    
+    ball->append_render_matrix(ball_bounce);
+
     // Character textures and score counter
     WGAERRCHECK(texture_manager->load_character_textures())
     scorep2 = make_shared<Text_Object>(drawer,texture_manager,"0",60,35,1,4,2);
     scorep1 = make_shared<Text_Object>(drawer,texture_manager,"0",-60,35,1,4,2);
+    scorep2->set_mask(GOLD_COL);
+    scorep1->set_mask(GOLD_COL);
+    scorep2->change_text("0");
+    scorep1->change_text("0");
     
     drawer->set_background_colour(BACKGROUND_COLOUR);
     drawer->draw_objects();

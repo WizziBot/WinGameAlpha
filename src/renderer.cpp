@@ -133,25 +133,43 @@ void Drawer::draw_objects(){
             OCLEX(clEnqueueNDRangeKernel(queue, draw_matrix_kernel, 1, NULL, &global_work_size, &local_work_size, 0, NULL, &wait_for_draw));
 
 #else
+            // sort out mask for openGL
             int mw = (int)matrix->m_width, mh = (int)matrix->m_height;
+            int x,y;
             uint32_t* unit_col = matrix->m_matrix;
-            int x,y; 
-            for (y = 0; y < mh; y++){
-                for (x = 0; x < mw; x++){
-                    if (!((*unit_col) & ALPHA_BIT)){
-                        draw_rect_px(x0,y0,x1,y1,*unit_col);
+            if ((*render_object)->is_mask){
+                uint32_t mask_col = (*render_object)->mask_colour;
+                for (y = 0; y < mh; y++){
+                    for (x = 0; x < mw; x++){
+                        if (!((*unit_col) & ALPHA_BIT)){
+                            draw_rect_px(x0,y0,x1,y1,mask_col);
+                        }
+                        x0 += unit_size_x_px;
+                        x1 += unit_size_x_px;
+                        unit_col++;
                     }
-                    // ((uint32_t*)render_state.memory)[x0 + y0*render_state.width] = 0; //dot grid to implement somehow in the future
-                    // ((uint32_t*)render_state.memory)[x1 + y1*render_state.width] = 0;
-                    x0 += unit_size_x_px;
-                    x1 += unit_size_x_px;
-                    unit_col++;
-                }
 
-                y0 += unit_size_y_px;
-                y1 += unit_size_y_px;
-                x0 = x0_i;
-                x1 = x1_i;
+                    y0 += unit_size_y_px;
+                    y1 += unit_size_y_px;
+                    x0 = x0_i;
+                    x1 = x1_i;
+                }
+            } else {
+                for (y = 0; y < mh; y++){
+                    for (x = 0; x < mw; x++){
+                        if (!((*unit_col) & ALPHA_BIT)){
+                            draw_rect_px(x0,y0,x1,y1,*unit_col);
+                        }
+                        x0 += unit_size_x_px;
+                        x1 += unit_size_x_px;
+                        unit_col++;
+                    }
+
+                    y0 += unit_size_y_px;
+                    y1 += unit_size_y_px;
+                    x0 = x0_i;
+                    x1 = x1_i;
+                }
             }
 #endif
         }
@@ -268,6 +286,7 @@ void Text_Object::set_text(string text){
             shared_ptr<Render_Object> new_obj = make_shared<Render_Object>(m_drawer,curr_matrix,m_render_layer,false);
             new_obj->draw_set_pos(curr_dpos);
             new_obj->set_unit_dims((unit_dims){.x=m_unit_size,.y=m_unit_size});
+            if (use_mask) new_obj->set_mask(mask_colour);
             text_characters.push_back(new_obj);
             curr_dpos.x += m_unit_size*(m_char_width+1);
         }

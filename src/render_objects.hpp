@@ -107,9 +107,16 @@ void append_render_matrix(shared_ptr<Render_Matrix> render_matrix){
 }
 
 void switch_active_matrix(int index){
+    if (index == active_idx) return;
     if (index < m_render_matrices.size() && index >=0){
         m_render_matrix = m_render_matrices.at(index);
+        active_idx = index;
     }
+}
+
+void set_mask(uint32_t colour){
+    is_mask = true;
+    mask_colour = colour;
 }
 
 protected:
@@ -117,8 +124,11 @@ draw_pos m_draw_pos = {0,0};
 int m_render_layer;
 vector<shared_ptr<Render_Matrix>> m_render_matrices;
 shared_ptr<Render_Matrix> m_render_matrix;
+int active_idx = 0;
 float r_unit_size_x;
 float r_unit_size_y;
+bool is_mask = false;
+uint32_t mask_colour = 0;
 
 };
 
@@ -150,6 +160,12 @@ void set_offset(draw_pos dpos){
     m_offset = dpos;
 }
 
+/* Use character textures as mask for a colour*/
+void set_mask(uint32_t colour){
+    use_mask = true;
+    mask_colour = colour;
+}
+
 private:
 draw_pos m_offset;
 void set_text(string text);
@@ -164,6 +180,8 @@ string text_literal;
 float m_unit_size=0;
 int m_render_layer;
 int m_char_width;
+bool use_mask=false;
+uint32_t mask_colour = 0;
 };
 
 }
