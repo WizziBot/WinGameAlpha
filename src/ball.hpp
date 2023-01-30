@@ -27,7 +27,7 @@ public:
     @param render_layer the id of the render layer of the object where the render objects within the layer will be rendered together,
     the render layers must be declared contiguously i.e. layer 0 must exist before layer 1
 */
-Ball(shared_ptr<Entity_Physics> physics, shared_ptr<Drawer> drawer,kinematic_dynamic_properties* initial_properties, int collision_group, vector<pair<int,bool>> target_collision_groups, aabb_bounds* bound_data, shared_ptr<Render_Matrix> render_matrix, int render_layer) 
+Ball(shared_ptr<Entity_Physics> physics, shared_ptr<Drawer> drawer,kinematic_dynamic_properties* initial_properties, int collision_group, vector<pair<int,bool>> target_collision_groups, aabb_bounds* bound_data,  Render_Matrix* render_matrix, int render_layer) 
 : Kinematic_Object(physics,initial_properties,collision_group,bound_data,target_collision_groups), Render_Object(drawer, render_matrix, render_layer, true) {};
 
 // Physics
