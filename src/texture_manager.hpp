@@ -25,7 +25,8 @@ Texture_Manager(shared_ptr<Drawer> drawer){
     @return WGA_SUCCESS on succes and WGA_FAILURE on failure
 */
 wga_err create_render_object(int render_matrix_index, int render_layer);
-/* Load character textures. Initialises the Character_Library and fills it with the Render_Matrix objects retrieved by loading the textures
+/* Must be ran at the end of (PHASE 0) 
+    Loads character textures. Initialises the Character_Library and fills it with the Render_Matrix objects retrieved by loading the textures
 */
 wga_err load_character_textures();
 /* (PHASE 0) Render matrix is a matrix type texture

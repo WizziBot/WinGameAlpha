@@ -82,7 +82,6 @@ void render_init(){
     /*** Register Phase 0 ***/
 
     // Load textures
-    WGAERRCHECK(texture_manager->load_character_textures())
 
     int width,height;
     float unit_size;
@@ -120,6 +119,7 @@ void render_init(){
     ld_texture("./textures/arena.wgat")
     int arena_render_matrix = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
     
+    WGAERRCHECK(texture_manager->load_character_textures())
     /*** Register Phase 1 ***/
     texture_manager->next_registration_phase();
 
@@ -148,8 +148,8 @@ void render_init(){
     ball->append_render_matrix(texture_manager->get_matrix_ptr(ball_bounce));
 
     // Score counters
-    scorep2 = make_shared<Text_Object>(drawer,texture_manager,"0",60,35,1,4,2);
-    scorep1 = make_shared<Text_Object>(drawer,texture_manager,"0",-60,35,1,4,2);
+    scorep2 = make_shared<Text_Object>(drawer,texture_manager,"0",60,35,1,4,SCORE_RENDER_LAYER);
+    scorep1 = make_shared<Text_Object>(drawer,texture_manager,"0",-60,35,1,4,SCORE_RENDER_LAYER);
     scorep2->set_mask(GOLD_COL);
     scorep1->set_mask(GOLD_COL);
     scorep2->change_text("0");
