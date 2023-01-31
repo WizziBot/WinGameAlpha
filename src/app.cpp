@@ -156,7 +156,6 @@ void render_init(){
     scorep1->change_text("0");
     
     drawer->set_background_colour(BACKGROUND_COLOUR);
-    drawer->draw_objects();
 
 #ifdef DEBUG_INFO
     {
