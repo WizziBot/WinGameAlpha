@@ -79,6 +79,8 @@ void render_init(){
         .half_height = (float)ARENA_U
     };
 
+    /*** Register Phase 0 ***/
+
     // Load textures
 
     int width,height;
@@ -89,37 +91,43 @@ void render_init(){
 #define ld_texture(path) err = texture_manager->load_texture(&temp_m,&width,&height,&unit_size,path);\
                          WGACHECKERRNO("Could not load " << path,err);\
                          if (err == WGA_FAILURE) return;
-                           
+
     // Players
     ld_texture("./textures/player.wgat")
     texture_manager->rotate_matrix(temp_m,&width,&height,1);
-    shared_ptr<Render_Matrix> player1_render_matrix = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
+    int player1_render_matrix = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
     ld_texture("./textures/player_bounce.wgat")
     texture_manager->rotate_matrix(temp_m,&width,&height,1);
-    shared_ptr<Render_Matrix> player1_bounce = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
+    int player1_bounce = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
     
     ld_texture("./textures/player.wgat")
     texture_manager->rotate_matrix(temp_m,&width,&height,1);
     texture_manager->flip_matrix(temp_m,width,height);
-    shared_ptr<Render_Matrix> player2_render_matrix = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
+    int player2_render_matrix = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
     ld_texture("./textures/player_bounce.wgat")
     texture_manager->rotate_matrix(temp_m,&width,&height,1);
     texture_manager->flip_matrix(temp_m,width,height);
-    shared_ptr<Render_Matrix> player2_bounce = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
+    int player2_bounce = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
     
     // Ball
     ld_texture("./textures/ball.wgat")
-    shared_ptr<Render_Matrix> ball_render_matrix = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
+    int ball_render_matrix = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
     ld_texture("./textures/ball_bounce.wgat")
-    shared_ptr<Render_Matrix> ball_bounce = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
+    int ball_bounce = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
     
     // Arena
     ld_texture("./textures/arena.wgat")
-    shared_ptr<Render_Matrix> arena_render_matrix = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
-    texture_manager->create_render_object(arena_render_matrix,ARENA_RENDER_LAYER);
+    int arena_render_matrix = texture_manager->create_render_matrix(0,0,width,height,temp_m,unit_size,unit_size);
     
-    // Register render objects
+    WGAERRCHECK(texture_manager->load_character_textures())
+    /*** Register Phase 1 ***/
+    texture_manager->next_registration_phase();
+
+    WGAERRCHECK(texture_manager->create_render_object(arena_render_matrix,ARENA_RENDER_LAYER))
+
+    /*** Register Phase 2 ***/
     texture_manager->register_all_objects();
+    /*** End Registration ***/
 
     // Register the arena bounds
     Collider_Boundary arena_bound(0, 0, arena_aabb, BOUND_ALL);
@@ -132,17 +140,16 @@ void render_init(){
     // Initialize game objects
     vector<pair<int,bool>> player_targets; player_targets.push_back(make_pair<int,bool>(ARENA_COLLISION_GROUP,true)); player_targets.push_back(make_pair<int,bool>(B_COLLISION_GROUP,false));
     vector<pair<int,bool>> ball_targets; ball_targets.push_back(make_pair(ARENA_COLLISION_GROUP,true)); ball_targets.push_back(make_pair(P_COLLISION_GROUP,true));
-    player1 = make_shared<Player>(physics, drawer, &player1_init, P_COLLISION_GROUP, player_targets, &player_aabb, player1_render_matrix, P_B_RENDER_LAYER);
-    player1->append_render_matrix(player1_bounce);
-    player2 = make_shared<Player>(physics, drawer, &player2_init, P_COLLISION_GROUP, player_targets, &player_aabb, player2_render_matrix, P_B_RENDER_LAYER);
-    player2->append_render_matrix(player2_bounce);
-    ball = make_shared<Ball>(physics, drawer, &ball_init, B_COLLISION_GROUP, ball_targets, &ball_aabb, ball_render_matrix, P_B_RENDER_LAYER);
-    ball->append_render_matrix(ball_bounce);
+    player1 = make_shared<Player>(physics, drawer, &player1_init, P_COLLISION_GROUP, player_targets, &player_aabb, texture_manager->get_matrix_ptr(player1_render_matrix), P_B_RENDER_LAYER);
+    player1->append_render_matrix(texture_manager->get_matrix_ptr(player1_bounce));
+    player2 = make_shared<Player>(physics, drawer, &player2_init, P_COLLISION_GROUP, player_targets, &player_aabb, texture_manager->get_matrix_ptr(player2_render_matrix), P_B_RENDER_LAYER);
+    player2->append_render_matrix(texture_manager->get_matrix_ptr(player2_bounce));
+    ball = make_shared<Ball>(physics, drawer, &ball_init, B_COLLISION_GROUP, ball_targets, &ball_aabb, texture_manager->get_matrix_ptr(ball_render_matrix), P_B_RENDER_LAYER);
+    ball->append_render_matrix(texture_manager->get_matrix_ptr(ball_bounce));
 
-    // Character textures and score counter
-    WGAERRCHECK(texture_manager->load_character_textures())
-    scorep2 = make_shared<Text_Object>(drawer,texture_manager,"0",60,35,1,4,2);
-    scorep1 = make_shared<Text_Object>(drawer,texture_manager,"0",-60,35,1,4,2);
+    // Score counters
+    scorep2 = make_shared<Text_Object>(drawer,texture_manager,"0",60,35,1,4,SCORE_RENDER_LAYER);
+    scorep1 = make_shared<Text_Object>(drawer,texture_manager,"0",-60,35,1,4,SCORE_RENDER_LAYER);
     scorep2->set_mask(GOLD_COL);
     scorep1->set_mask(GOLD_COL);
     scorep2->change_text("0");
