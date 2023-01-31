@@ -6,6 +6,7 @@
 // Rendering
 #define ARENA_RENDER_LAYER 0
 #define P_B_RENDER_LAYER 1
+#define SCORE_RENDER_LAYER 2
 #define BACKGROUND_COLOUR 0x252525
 #define ARENA_COLOUR 0x1e1e1e
 #define B_COLOUR 0xffffff

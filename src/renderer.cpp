@@ -40,11 +40,11 @@ Drawer::~Drawer(){
     clReleaseProgram(program);
 #endif
 }
-wga_err Drawer::register_render_object(shared_ptr<Render_Object> render_obj){
+wga_err Drawer::register_render_object(Render_Object* render_obj){
     if (render_obj->m_render_layer > render_layers.size()){
         RNDERR("Render layers must be contiguous: invalid render layer id.");
     } else if (render_obj->m_render_layer == render_layers.size()){
-        list<shared_ptr<Render_Object> > render_objs;
+        list<Render_Object* > render_objs;
         render_objs.push_back(render_obj);
         render_layers.push_back(render_objs);
     } else {
@@ -52,11 +52,11 @@ wga_err Drawer::register_render_object(shared_ptr<Render_Object> render_obj){
     }
     return WGA_SUCCESS;
 }
-wga_err Drawer::register_render_object(shared_ptr<Render_Object> render_obj, list<shared_ptr<Render_Object>>::iterator& obj_iter){
+wga_err Drawer::register_render_object(Render_Object* render_obj, list<Render_Object*>::iterator& obj_iter){
     if (render_obj->m_render_layer > render_layers.size()){
         RNDERR("Render layers must be contiguous: invalid render layer id.");
     } else if (render_obj->m_render_layer == render_layers.size()){
-        list<shared_ptr<Render_Object> > render_objs;
+        list<Render_Object* > render_objs;
         render_objs.push_back(render_obj);
         render_layers.push_back(render_objs);
     } else {
@@ -67,9 +67,9 @@ wga_err Drawer::register_render_object(shared_ptr<Render_Object> render_obj, lis
     return WGA_SUCCESS;
 }
 
-void Drawer::unregister_render_objects(int render_layer, list<shared_ptr<Render_Object>>::iterator start, int size){
-    vector<list<shared_ptr<Render_Object> > >::iterator layer = render_layers.begin() + render_layer;
-    list<shared_ptr<Render_Object>>::iterator end = layer->begin();
+void Drawer::unregister_render_objects(int render_layer, list<Render_Object*>::iterator start, int size){
+    vector<list<Render_Object* > >::iterator layer = render_layers.begin() + render_layer;
+    list<Render_Object*>::iterator end = layer->begin();
     std::advance(end,std::distance(layer->begin(),start)+size);
     (*layer).erase(start,end);
 }
@@ -85,11 +85,11 @@ void Drawer::draw_objects(){
     float rh = (float)render_state.height;
     float rw = (float)render_state.width;
     float factor = (float)render_state.height/100.f;
-    vector<list<shared_ptr<Render_Object> > >::iterator layer;
-    shared_ptr<Render_Matrix> matrix;
+    vector<list<Render_Object* > >::iterator layer;
+    Render_Matrix* matrix;
     draw_pos offset;
     for (layer = render_layers.begin(); layer != render_layers.end(); layer++){
-        list<shared_ptr<Render_Object> >::iterator render_object;
+        list<Render_Object* >::iterator render_object;
         for (render_object = (*layer).begin(); render_object != (*layer).end(); render_object++){
             offset = (*render_object)->draw_get_pos();
             
@@ -125,6 +125,8 @@ void Drawer::draw_objects(){
             matrix_data[7] = render_state.width - unit_size_x_px*matrix->m_width;
             matrix_data[8] = x0 % render_state.width;
             matrix_data[9] = y0;
+            if ((*render_object)->is_mask) matrix_data[10] = (*render_object)->mask_colour;
+            else matrix_data[10] = ALPHA_BIT;
             clEnqueueUnmapMemObject(queue, matrix_data_buf, matrix_data, 0, NULL, NULL);
             // Wait for previous kernel to finish before changing matrix buffer
             if (render_object != (*layer).begin()) clWaitForEvents(1,&wait_for_draw);
@@ -133,7 +135,7 @@ void Drawer::draw_objects(){
             OCLEX(clEnqueueNDRangeKernel(queue, draw_matrix_kernel, 1, NULL, &global_work_size, &local_work_size, 0, NULL, &wait_for_draw));
 
 #else
-            // sort out mask for openGL
+            
             int mw = (int)matrix->m_width, mh = (int)matrix->m_height;
             int x,y;
             uint32_t* unit_col = matrix->m_matrix;
@@ -231,7 +233,7 @@ void Drawer::cl_draw_finish(){
 #endif
 }
 
-Render_Object::Render_Object(shared_ptr<Drawer> drawer, shared_ptr<Render_Matrix> render_matrix, int render_layer, bool is_subclass)
+Render_Object::Render_Object(shared_ptr<Drawer> drawer, Render_Matrix* render_matrix, int render_layer, bool is_subclass)
 : m_render_layer(render_layer){
     if (render_matrix == NULL) throw std::invalid_argument("Renderer Error: The render matrix must not be null");
     m_render_matrices.push_back(render_matrix);
@@ -240,8 +242,7 @@ Render_Object::Render_Object(shared_ptr<Drawer> drawer, shared_ptr<Render_Matrix
     r_unit_size_x = udims.x;
     r_unit_size_y = udims.y;
     if (is_subclass) {
-        shared_ptr<Render_Object> this_obj(this);
-        WGAERRCHECK(drawer->register_render_object(this_obj));
+        WGAERRCHECK(drawer->register_render_object(this));
     }
 }
 
@@ -251,7 +252,7 @@ Render_Matrix::Render_Matrix(float x_offset, float y_offset, float width, float 
     if (width*height > MAX_MATRIX_SIZE) throw std::invalid_argument("Renderer Error: Matrix exceeded max dim size");
 }
 
-shared_ptr<Render_Matrix> Character_Library::get_character_matrix(char character){
+Render_Matrix* Character_Library::get_character_matrix(char character){
     if (character >= '0' && character <= '9'){
         int idx = (int)character - (int)'0';
         return character_list.at(idx);
@@ -278,8 +279,7 @@ void Text_Object::set_text(string text){
     draw_pos curr_dpos = {.x=0,.y=0};
     curr_dpos.x = -m_unit_size*((float)m_char_width+1.f)*((float)text.size())/2.f + m_offset.x;
     curr_dpos.y = m_offset.y;
-    shared_ptr<Render_Matrix> curr_matrix;
-    text_characters.reserve(TEXT_OBJ_ALLOCATE_SIZE);
+    Render_Matrix* curr_matrix;
     for (t = text.begin(); t != text.end(); t++){
         curr_matrix = (*character_library).get_character_matrix(*t);
         if (curr_matrix != nullptr){
@@ -297,9 +297,9 @@ void Text_Object::display(){
     vector<shared_ptr<Render_Object>>::iterator iter;
     for (iter = text_characters.begin(); iter != text_characters.end(); iter++){
         if (iter == text_characters.begin()){
-            m_drawer->register_render_object(*iter,text_idx);
+            m_drawer->register_render_object(iter->get(),text_idx);
         } else {
-            m_drawer->register_render_object(*iter);
+            m_drawer->register_render_object(iter->get());
         }
     }
 }
